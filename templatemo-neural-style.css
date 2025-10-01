@@ -1256,6 +1256,70 @@ https://templatemo.com/tm-597-neural-glass
          font-size: 0.85rem;
     }
 }
+
+/* 🔧 Fix overflow on small screens */
+@media (max-width: 768px) {
+  header {
+    width: 92%;
+    padding: 12px 20px;
+  }
+
+  .hero-content {
+    padding: 50px 20px;
+    margin-top: 80px;
+  }
+
+  .hero-description p {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  .cta-buttons {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .feature-row {
+    flex-direction: column !important;
+    gap: 30px;
+  }
+
+  .feature-content {
+    padding: 20px;
+    transform: none; /* remove skew on phones */
+    text-align: center;
+  }
+
+  .feature-visual {
+    height: 200px;
+  }
+
+  .nav-links {
+    gap: 5px;
+  }
+
+  .nav-links a {
+    padding: 10px 12px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero h1 {
+    font-size: 1.8rem;
+  }
+  .hero-subtitle {
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+  }
+  .hero-stat-number {
+    font-size: 1.4rem;
+  }
+}
+
+
+
+
 /* Enhanced scrollbar */
  ::-webkit-scrollbar {
      width: 12px;
