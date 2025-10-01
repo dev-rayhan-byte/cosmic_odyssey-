@@ -1,0 +1,2157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NASA Exoplanet Detection Console</title>
+  <style>
+    :root {
+      --bg: #0b0d10;
+      --panel: rgba(17,24,39,0.75);
+      --panel-border: #1f2037;
+      --txt: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #00d9ff;
+      --accent-2: #00ff88;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--txt);
+      overflow-x: hidden;
+      text-align: center;
+    }
+
+    /* === Starfield Background === */
+    #starfield {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -20;
+      background: black;
+    }
+
+    /* === Radar Pulse Overlay === */
+    #radar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -15;
+      pointer-events: none;
+    }
+
+    /* === Panels === */
+    .panel {
+      background: var(--panel);
+      backdrop-filter: blur(14px) saturate(160%);
+      border: 1px solid var(--panel-border);
+      border-radius: 14px;
+      padding: 16px;
+      margin: 20px auto;
+      width: 70%;
+      box-shadow: 0 0 30px rgba(0, 217, 255, 0.08), inset 0 0 0 1px rgba(255,255,255,0.02);
+      animation: fadeInUp 0.8s ease;
+    }
+
+    /* === Neon Buttons === */
+    .btn {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      color: var(--txt);
+      border-radius: 8px;
+      padding: 7px 14px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: 0.2s;
+    }
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(120deg, transparent, var(--accent), transparent);
+      transition: 0.5s;
+    }
+    .btn:hover::before { left: 100%; }
+    .btn:hover {
+      color: var(--accent);
+      box-shadow: 0 0 18px var(--accent);
+    }
+
+    /* === Logo Glow === */
+    .logo {
+      font-size: 32px;
+      color: var(--accent);
+      margin-top: 30px;
+      animation: pulse 3s infinite;
+      filter: drop-shadow(0 0 6px var(--accent));
+    }
+    @keyframes pulse {
+      0%,100% { transform: scale(1); filter: drop-shadow(0 0 6px var(--accent)); }
+      50% { transform: scale(1.1); filter: drop-shadow(0 0 14px var(--accent-2)); }
+    }
+
+    /* === Console Typewriter === */
+    .console div {
+      overflow: hidden;
+      white-space: nowrap;
+      border-right: 2px solid var(--accent);
+      animation: typing 3s steps(40, end), blink 0.7s infinite;
+      width: fit-content;
+      margin: auto;
+    }
+    @keyframes typing { from { width: 0 } to { width: 100% } }
+    @keyframes blink { 50% { border-color: transparent } }
+
+    /* === Animations === */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Starfield Backgro
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>EXOPLANET DETECTION CONSOLE — Planet Hunter</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- Chart.js + Zoom plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2"></script>
+<!-- Mono font for instrument readouts -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0d10;
+    --panel: #111827;
+    --panel-border: #1f2037;
+    --txt: #e5e7eb;
+    --muted: #94a3b8;
+    --accent: #00d9ff;
+    --accent-2: #00ff88;
+    --warn: #ff8a00;
+    --bad: #ff4d4d;
+    --good: #00ff88;
+    --grid: rgba(0,217,255,0.06);
+  }
+  .light {
+    --bg: #f6f7fb;
+    --panel: #ffffff;
+    --panel-border: #d9dee5;
+    --txt: #0b0d10;
+    --muted: #445069;
+    --accent: #0059ff;
+    --accent-2: #08a66c;
+    --warn: #b45a00;
+    --bad: #d92626;
+    --good: #0c9a63;
+    --grid: rgba(0,89,255,0.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(0,217,255,0.07), transparent 60%),
+                radial-gradient(1000px 400px at 90% 0%, rgba(0,255,136,0.05), transparent 60%),
+                var(--bg);
+    color: var(--txt);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  header {
+    position: sticky; top: 0; z-index: 30;
+    background: color-mix(in srgb, var(--panel), transparent 30%);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--panel-border);
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 14px; justify-content: space-between;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: radial-gradient(circle at 30% 30%, var(--accent), transparent 60%), #0f172a;
+    box-shadow: 0 0 24px rgba(0,217,255,0.35) inset, 0 0 12px rgba(0,217,255,0.25);
+  }
+  .title { line-height: 1.1; }
+  .title b { color: var(--accent); letter-spacing: 0.5px; }
+  .controls { display: flex; align-items: center; gap: 10px; }
+  .btn {
+    background: var(--panel);
+    color: var(--txt);
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    transition: 0.2s border, 0.2s color, 0.2s box-shadow;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent), transparent 80%); }
+  .btn.ghost { background: transparent; }
+  main { max-width: 1280px; margin: 20px auto 120px; padding: 0 16px; }
+  .grid { display: grid; gap: 16px; }
+  .g-2-1 { grid-template-columns: 2fr 1fr; }
+  @media (max-width: 1000px) { .g-2-1 { grid-template-columns: 1fr; } }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02), 0 12px 30px rgba(0,0,0,0.25);
+  }
+  .panel h2 { font-size: 16px; margin: 0 0 10px; color: var(--accent); letter-spacing: 0.3px; }
+  .small { font-size: 12px; color: var(--muted); }
+  .telemetry { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .tcard {
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent), transparent 92%), transparent 96%);
+    border: 1px solid var(--panel-border); padding: 12px; border-radius: 10px;
+  }
+  .tval { font-size: 22px; font-weight: 600; }
+  .tlabel { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .three-panels { display: grid; gap: 12px; grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 900px) { .three-panels { grid-template-columns: 1fr; } }
+  .panelBtn {
+    border: 1px solid var(--panel-border); border-radius: 10px; padding: 8px; cursor: pointer;
+    transition: 0.2s border, 0.2s box-shadow, 0.2s transform;
+  }
+  .panelBtn:hover { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent), transparent 85%); transform: translateY(-1px); }
+  .panelBtn.correct { border-color: var(--good); box-shadow: 0 0 0 2px color-mix(in srgb, var(--good), transparent 75%); }
+  .panelBtn.wrong { border-color: var(--bad); box-shadow: 0 0 0 2px color-mix(in srgb, var(--bad), transparent 75%); }
+  canvas.chart {
+    background:
+      linear-gradient(0deg, transparent 24px, var(--grid) 25px, transparent 26px),
+      linear-gradient(90deg, transparent 24px, var(--grid) 25px, transparent 26px),
+      linear-gradient(0deg, transparent 4px, color-mix(in srgb, var(--accent), transparent 90%) 5px, transparent 6px);
+    background-size: 30px 30px, 30px 30px, 6px 6px;
+    border-radius: 10px;
+  }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row label { font-size: 12px; color: var(--muted); }
+  .input, select {
+    background: var(--panel); color: var(--txt); border: 1px solid var(--panel-border);
+    padding: 6px 8px; border-radius: 6px;
+  }
+  .status { margin-top: 8px; font-size: 13px; }
+  .status.good { color: var(--good); }
+  .status.bad { color: var(--bad); }
+  .console {
+    height: 140px; overflow: auto; background: #0a0f16; color: #a8ffea; border-radius: 8px; padding: 8px 10px;
+    font-size: 12px; border: 1px solid #0d1926;
+  }
+  .console .warn { color: #ffd38a; }
+  .console .err { color: #ff9d9d; }
+  .floating {
+    position: fixed; right: 18px; bottom: 18px; z-index: 50;
+    width: 62px; height: 62px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: radial-gradient(circle at 30% 30%, var(--accent), transparent 65%), #0f172a;
+    border: 1px solid var(--panel-border);
+    color: var(--txt); cursor: pointer;
+    box-shadow: 0 10px 30px rgba(0,217,255,0.25), inset 0 0 22px rgba(0,217,255,0.25);
+    transition: transform .15s ease;
+  }
+  .floating:hover { transform: translateY(-2px) scale(1.02); }
+  footer {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+    border-top: 1px solid var(--panel-border);
+    background: color-mix(in srgb, var(--panel), transparent 20%);
+    backdrop-filter: blur(6px);
+    color: var(--muted); font-size: 12px; padding: 8px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+    .panelBtn img {
+  display: block;
+  width: 100%;
+  height: 160px;   /* adjust depending on your images */
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+</style>
+</head>
+<body class="" id="body">
+  <header>
+    <div class="brand">
+  <img src="logo.png" alt="Team Logo" class="logo">
+  <div class="title">
+    <div>TEAM PLANET HUNTER — Bangladesh</div>
+    <div><b>EXOPLANET DETECTION CONSOLE</b> · NSAC 2025</div>
+  </div>
+</div>
+
+<style>
+.logo {
+  width: 60px;  /* adjust size */
+  height: 60px;
+  object-fit: contain; /* maintain aspect ratio */
+}
+
+</style>
+
+    <div class="controls">
+      <button class="btn" id="toggleTheme">Toggle Light/Dark</button>
+      <button class="btn ghost" onclick="scrollToId('classifier')">Engage Scanner</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Telemetry -->
+    <section class="panel">
+      <h2>Mission Telemetry</h2>
+      <div class="telemetry">
+        <div class="tcard"><div class="tval" id="volunteers">1,240</div><div class="tlabel">Volunteers</div></div>
+        <div class="tcard"><div class="tval" id="classifications">12,845</div><div class="tlabel">Classifications</div></div>
+        <div class="tcard"><div class="tval" id="candidates">327</div><div class="tlabel">Candidates</div></div>
+      </div>
+      <div class="small" style="margin-top:6px;">Stats auto-update every 1.8 s · <span id="statsState">RUNNING</span></div>
+    </section>
+    
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Light Curve Classifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --background-color: #0d1117;
+      --panel-color: rgba(22, 27, 34, 0.8);
+      --border-color: #30363d;
+      --font-color: #c9d1d9;
+      --font-color-secondary: #8b949e;
+      --accent-color: #2f81f7;
+      --accent-hover-color: #58a6ff;
+      --success-color: #3fb950;
+      --warning-color: #e5b53b;
+    }
+    [data-theme="light"] {
+      --background-color: #f6f8fa;
+      --panel-color: #ffffff;
+      --border-color: #d0d7de;
+      --font-color: #24292f;
+      --font-color-secondary: #57606a;
+      --accent-color: #0969da;
+      --accent-hover-color: #218bff;
+      --success-color: #1a7f37;
+      --warning-color: #bf8700;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: var(--background-color);
+        color: var(--font-color);
+        padding: 20px;
+    }
+
+    /* App layout */
+    .app-container {
+      width: 100%; max-width: 1400px; margin: auto;
+      backdrop-filter: blur(10px);
+      background-color: rgba(0,0,0,0.3);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      animation: fadeIn 0.6s ease;
+    }
+    @keyframes fadeIn { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+
+    header { display: flex; align-items: center; margin-bottom: 20px; }
+    header h1 { font-size: 1.8em; font-weight: 600; margin-right: auto;}
+    .theme-toggle { cursor: pointer; border: none; background: none; font-size: 1.5em; color: var(--font-color); }
+
+    /* Grid layout */
+    .classifier-grid { display: flex; gap: 20px; }
+    .display-panel { flex: 3; min-width: 0; }
+    .task-panel {
+      flex: 1; background-color: var(--panel-color);
+      border: 1px solid var(--border-color); border-radius: 8px;
+      padding: 20px; align-self: flex-start; position: sticky; top: 20px;
+      animation: fadeIn 0.5s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    /* Image box */
+    .image-display-box {
+      background-color: var(--panel-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 10px;
+    }
+    .image-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 5px 10px; margin-bottom: 10px;
+    }
+    .image-title { font-weight: 600; }
+    .image-controls button {
+      background: none; border: none;
+      color: var(--font-color-secondary); cursor: pointer; padding: 5px;
+      transition: color 0.2s;
+    }
+    .image-controls button:hover { color: var(--font-color); }
+    .image-container { overflow: hidden; }
+    #light-curve-image {
+      width: 100%; border-radius: 4px; display: block;
+      transition: transform 0.3s ease;
+      transform-origin: center center;
+    }
+    /* Task panel */
+    .question-block { margin-bottom: 25px; opacity: 0; transform: translateY(10px); transition: all 0.4s; }
+    .question-block.visible { opacity: 1; transform: translateY(0); }
+    .question-text { margin-bottom: 15px; font-weight: 600; line-height: 1.5; }
+    .answer-options button {
+      display: flex; align-items: center; gap: 10px;
+      width: 100%; padding: 12px; margin-bottom: 8px;
+      background-color: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--font-color); text-align: left; font-size: 0.95em;
+      cursor: pointer; border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .answer-options button:hover {
+      border-color: var(--accent-hover-color);
+      background-color: rgba(88, 166, 255, 0.06);
+    }
+    .answer-options button.selected {
+      background-color: var(--accent-color);
+      border-color: var(--accent-color);
+      color: white;
+    }
+    .key-hint {
+      font-size: 0.8em; font-weight: 300;
+      padding: 2px 6px; border: 1px solid var(--border-color);
+      border-radius: 4px;
+    }
+    #submit-button {
+      width: 100%; padding: 12px 15px;
+      background-color: var(--warning-color);
+      color: var(--background-color); border: none;
+      font-size: 1em; font-weight: bold;
+      cursor: pointer; border-radius: 6px;
+      opacity: 0.5; pointer-events: none;
+      transition: all 0.3s; display: flex;
+      align-items: center; justify-content: center; gap: 10px;
+      margin-top: 8px;
+    }
+    #submit-button.enabled { opacity: 1; pointer-events: auto; }
+
+    /* NEW: Tab Styles */
+    .tab-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 15px; }
+    .tab-btn {
+        padding: 10px 15px; background: none; border: none;
+        color: var(--font-color-secondary); cursor: pointer;
+        border-bottom: 3px solid transparent; transition: all 0.2s;
+        font-weight: 600; font-size: 1em; margin-bottom: -1px;
+    }
+    .tab-btn:hover { color: var(--font-color); }
+    .tab-btn.active { color: var(--accent-hover-color); border-bottom-color: var(--accent-hover-color); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.4s; }
+
+    /* NEW: Tutorial-specific styles */
+    .tutorial-section { margin-bottom: 25px; }
+    .tutorial-section h3 { margin-bottom: 10px; color: var(--accent-hover-color); font-size: 1.1em; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+    .tutorial-section p { font-size: 0.9em; line-height: 1.6; margin-bottom: 10px; color: var(--font-color-secondary); }
+    .tutorial-section p b { color: var(--font-color); }
+    .tutorial-section img { max-width: 100%; border-radius: 4px; margin-top: 10px; border: 1px solid var(--border-color); }
+
+    /* Completion Screen */
+    .completion-screen {
+      text-align: center; padding: 30px;
+      background-color: var(--panel-color);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+    }
+    .hidden { display: none !important; }
+
+    /* small helpers */
+    .task-actions { display:flex; gap:8px; margin-top:10px; }
+    .small-btn { padding:8px 10px; border-radius:6px; border:1px solid var(--border-color); background:none; color:var(--font-color-secondary); cursor:pointer; }
+    .small-btn:hover { color: var(--font-color); border-color: var(--accent-hover-color); }
+
+    @media (max-width: 900px) {
+      .classifier-grid { flex-direction: column; }
+      .task-panel { position: static; width: 100%; max-height: none; }
+    }
+
+    /* simple toast */
+    #toast {
+      position: fixed; right: 20px; bottom: 20px;
+      background: rgba(0,0,0,0.8); color: white; padding: 10px 14px;
+      border-radius: 8px; display: none; z-index: 9999;
+    }
+    #toast.show { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="app-container">
+<header>
+  <h1>Eclipsing Binary Patrol</h1>
+  <button id="theme-toggle" class="theme-toggle material-icons">light_mode</button>
+</header>
+
+  <main id="classifier-main" class="classifier-grid">
+    <div class="display-panel">
+        <div class="image-display-box">
+          <div class="image-header">
+            <div id="image-metadata" class="image-title">TIC 41756627; Sector: 39; Period = 1.0042 days</div>
+            <div class="image-controls">
+              <button id="zoom-in-button" title="Zoom In"><i class="material-icons">zoom_in</i></button>
+              <button id="zoom-out-button" title="Zoom Out"><i class="material-icons">zoom_out</i></button>
+              <button id="reset-zoom-button" title="Reset Zoom"><i class="material-icons">restart_alt</i></button>
+            </div>
+          </div>
+          <div class="image-container">
+            <img id="light-curve-image" src="https://i.imgur.com/vHq05sM.jpg" alt="TESS Light Curve"/>
+          </div>
+        </div>
+    </div>
+
+    <div class="task-panel">
+        <div class="tab-nav">
+            <button class="tab-btn active" data-tab="task">TASK</button>
+            <button class="tab-btn" data-tab="tutorial">TUTORIAL</button>
+        </div>
+
+        <div id="task-content" class="tab-content active">
+  <div id="task-questions">
+    <!-- Question 1 -->
+    <div id="question1" class="question-block visible">
+      <div class="question-text"><b>Upper Panel ONLY:</b> Do you see clearly visible periodic dips in this image?</div>
+      <div class="answer-options">
+        <button data-answer="Yes">Yes <span class="key-hint" style="margin-left:auto">1</span></button>
+        <button data-answer="No">No <span class="key-hint" style="margin-left:auto">2</span></button>
+      </div>
+    </div>
+
+    <!-- Question 2 -->
+    <div id="question2" class="question-block hidden">
+      <div class="question-text">Are there two distinct dip depths (a deeper primary and a shallower secondary)?</div>
+      <div class="answer-options">
+        <button data-answer="Yes">Yes, two depths are visible <span class="key-hint" style="margin-left:auto">1</span></button>
+        <button data-answer="No">No, all dips seem the same depth <span class="key-hint" style="margin-left:auto">2</span></button>
+      </div>
+    </div>
+
+    <!-- Question 3 -->
+    <div id="question3" class="question-block hidden">
+      <div class="question-text">Observe the phased curve (lower panel). Where does the shallower (secondary) dip occur?</div>
+      <div class="answer-options">
+        <button data-answer="Phase 0.5">Near phase 0.5 (centered) <span class="key-hint" style="margin-left:auto">1</span></button>
+        <button data-answer="Offset from 0.5">Noticeably offset from phase 0.5 <span class="key-hint" style="margin-left:auto">2</span></button>
+        <button data-answer="Not visible">The secondary dip is not clearly visible <span class="key-hint" style="margin-left:auto">3</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="task-actions">
+    <button id="submit-button" class="" title="Submit answers (Enter)">Submit</button>
+    <button id="export-button" class="small-btn" title="Export CSV">Export</button>
+    <button id="restart-button" class="small-btn" title="Restart">Restart</button>
+  </div>
+</div>
+
+
+        <div id="tutorial-content" class="tab-content">
+            <div class="tutorial-section">
+                <h3>Introduction</h3>
+                <p>In this workflow, you'll help separate <b>eclipsing binary candidates</b> from impostors. An eclipsing binary is a system where two stars orbit each other, and from our point of view, one periodically passes in front of the other.</p>
+                <p>A <b>light curve</b> (top panel) shows the measured brightness of a star over time. When one star eclipses the other, we see a temporary "dip" in the total brightness.</p>
+            </div>
+
+            <div class="tutorial-section">
+                <h3>Question 1: Are there periodic dips?</h3>
+                <p><b>The Science:</b> This first check confirms that there are repeating, sudden drops in brightness, which is the key signature of an eclipsing object. The dips should be sharp, not gradual waves.</p>
+                <img src="periodic%20dip.jpeg" alt="Example of periodic dips">
+            </div>
+
+            <div class="tutorial-section">
+                <h3>Question 2: Are there deeper and shallower dips?</h3>
+                <p><b>The Science:</b> This helps confirm a binary system. The deeper <b>"primary"</b> eclipse happens when the smaller, hotter star is blocked. The shallower <b>"secondary"</b> eclipse happens when the larger, cooler star is blocked. They should both occur with the same period.</p>
+                 <img src="minor%20dip.jpeg" alt="Example of primary and secondary eclipses">
+            </div>
+
+            <div class="tutorial-section">
+                <h3>Question 3: How are the dips patterned?</h3>
+                <p><b>The Science:</b> The lower-left "phase-folded" plot shows one full orbit. This check verifies if the computer model has calculated the correct orbital period. If correct, the deep primary dips should happen <b>only at phase 0.0 and 1.0.</b></p>
+                <img src="dip%20pattern.jpeg" alt="Description of dip patterns">
+            </div>
+
+            <div class="tutorial-section">
+                <h3>Question 4: Is there a well-defined bright spot?</h3>
+                <p><b>The Science:</b> The lower-right "postage stamp" image shows how TESS sees the target. This question determines if the data quality is good. A clear, concentrated bright spot means the measurement is reliable.</p>
+                <img src="pixel%20map.jpeg" alt="Example of a well-defined bright spot">
+            </div>
+        </div>
+    </div>
+  </main>
+
+  <!-- completion container (hidden until finished) -->
+  <div id="completion-container" class="hidden" style="max-width:1200px;margin:20px auto;">
+    <div class="completion-screen">
+      <h2>All done — thank you!</h2>
+      <p>Your classifications were saved. Use the buttons to export or restart.</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
+        <button id="completion-export" class="small-btn">Export CSV</button>
+        <button id="completion-restart" class="small-btn">Restart</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+  const lightCurveData = [
+
+    { id: 'TIC 4468857', url: 'download.jpg', sector: 38, period: 1.7253 },
+    { id: 'TIC 231670397', url: 'download (1).png', sector: 1, period: 3.1415 },
+    { id: 'TIC 175310067', url: 'download (2).png', sector: 2, period: 0.9876 },
+    { id: 'TIC 155044736', url: 'download (3).png', sector: 28, period: 1.7253 },
+    { id: 'TIC 96246348', url: 'download (4).png', sector: 11, period: 6.1415 },
+    { id: 'TIC 97700520', url: 'download (5).png', sector: 2, period: 0.6876 },
+    { id: 'TIC 427508467', url: 'download (6).png', sector: 38, period: 2.7253 },
+    { id: 'TIC 114018671', url: 'download (7).png', sector: 1, period: 3.4415 },
+    { id: 'TIC 139853601', url: 'download (8).png', sector: 2, period: 2.9876 },
+    { id: 'TIC 231663901', url: 'download (9).png', sector: 1, period: 3.4415 },
+    { id: 'TIC 107782586', url: 'download (10).png', sector: 2, period: 2.9876 },
+  ];
+
+  let currentCurveIndex = 0;
+  let allClassifications = [];
+  let currentClassification = {};
+  let currentZoom = 1;
+
+  // --- DOM picks (safe) ---
+  const mainClassifier = document.getElementById('classifier-main');
+  const completionContainer = document.getElementById('completion-container');
+  const imageElement = document.getElementById('light-curve-image');
+  const metadataElement = document.getElementById('image-metadata');
+  const submitButton = document.getElementById('submit-button');
+  const exportButton = document.getElementById('export-button');
+  const restartButton = document.getElementById('restart-button');
+  const completionExport = document.getElementById('completion-export');
+  const completionRestart = document.getElementById('completion-restart');
+  const toast = document.getElementById('toast');
+
+  // tab buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      const tabEl = document.getElementById(tab+'-content');
+      if(tabEl) tabEl.classList.add('active');
+    });
+  });
+
+  // dynamic question collection: pick all .question-block inside #task-questions
+  const taskQuestionsContainer = document.getElementById('task-questions');
+  const questionBlocks = Array.from(taskQuestionsContainer.querySelectorAll('.question-block'));
+
+  // Map question DOM nodes to IDs (use element id or index)
+  const questions = {};
+  questionBlocks.forEach((el, idx) => {
+    const qid = el.id || `q${idx+1}`;
+    questions[qid] = el;
+  });
+
+  // toast helper
+  function showToast(msg, ms = 1800) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), ms);
+  }
+
+  // load a curve into the UI
+  function loadCurve(index) {
+    if (index >= lightCurveData.length) return showCompletionScreen();
+    const curve = lightCurveData[index];
+    if (curve.url) imageElement.src = curve.url;
+    metadataElement.textContent = `${curve.id}; Sector: ${curve.sector}; Period = ${curve.period} d`;
+    resetClassifierState();
+  }
+
+  // reset UI state for a new classification
+  function resetClassifierState() {
+    currentClassification = {};
+    // show first question block, hide others
+    const qEls = Object.values(questions);
+    qEls.forEach((qEl, i) => {
+      if (i === 0) {
+        qEl.classList.remove('hidden');
+        qEl.classList.add('visible');
+      } else {
+        qEl.classList.add('hidden');
+        qEl.classList.remove('visible');
+      }
+      qEl.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+    });
+    submitButton.classList.remove('enabled');
+    submitButton.classList.remove('disabled');
+    resetZoom();
+  }
+
+  // handle a user choice on a question
+  function handleAnswer(qid, btn) {
+    const answer = btn.dataset.answer;
+    currentClassification[qid] = answer;
+    // mark selected for visual feedback
+    const qEl = questions[qid];
+    if (!qEl) return;
+    qEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    // reveal next question if exists
+    const keys = Object.keys(questions);
+    const idx = keys.indexOf(qid);
+    const next = keys[idx + 1];
+    if (next) {
+      const nextEl = questions[next];
+      if (nextEl) {
+        nextEl.classList.remove('hidden');
+        setTimeout(()=> nextEl.classList.add('visible'), 30);
+      }
+    } else {
+      // last question answered -> enable submit
+      submitButton.classList.add('enabled');
+    }
+  }
+
+  // submit handler
+  function submitClassification() {
+    if (!submitButton.classList.contains('enabled')) return;
+    const record = Object.assign({}, lightCurveData[currentCurveIndex], { classification: {...currentClassification} });
+    allClassifications.push(record);
+
+    // quick feedback
+    showToast('Saved classification');
+
+    // auto-advance
+    currentCurveIndex++;
+    if (currentCurveIndex < lightCurveData.length) {
+      loadCurve(currentCurveIndex);
+    } else {
+      showCompletionScreen();
+    }
+  }
+
+  // CSV export
+  function exportToCSV(showMsg = true) {
+    if (!allClassifications.length) {
+      showToast('No classifications to export');
+      return;
+    }
+    const headers = ['id','sector','period'];
+    // collect all question ids seen (to be flexible)
+    const qids = Object.keys(questions);
+    headers.push(...qids);
+    const rows = allClassifications.map(c => {
+      const q = c.classification || {};
+      const vals = [c.id, c.sector, c.period, ...qids.map(k => q[k] || 'N/A')];
+      // escape commas by wrapping in quotes if needed
+      return vals.map(v => typeof v === 'string' && v.includes(',') ? `"${v}"` : v).join(',');
+    });
+    const csvContent = headers.join(',') + '\n' + rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'classifications.csv';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (showMsg) showToast('CSV downloaded!');
+  }
+
+  // Completion screen UI
+  function showCompletionScreen() {
+    mainClassifier.classList.add('hidden');
+    completionContainer.classList.remove('hidden');
+  }
+
+  function restartClassification(confirmPrompt = true) {
+    if (confirmPrompt && !confirm('Restart and erase progress?')) return;
+    currentCurveIndex = 0;
+    allClassifications = [];
+    completionContainer.classList.add('hidden');
+    mainClassifier.classList.remove('hidden');
+    loadCurve(0);
+  }
+
+  // Zoom controls
+  function applyZoom(){ imageElement.style.transform = `scale(${currentZoom})`; }
+  function zoomIn(){ currentZoom = Math.min(3, +(currentZoom + 0.2).toFixed(2)); applyZoom(); }
+  function zoomOut(){ currentZoom = Math.max(1, +(currentZoom - 0.2).toFixed(2)); applyZoom(); }
+  function resetZoom(){ currentZoom = 1; applyZoom(); }
+
+  // keyboard handling: numbers select options in the currently visible question
+  function handleKeyPress(e) {
+    // ignore if input-like is focused
+    const activeEl = document.activeElement;
+    const tag = activeEl && activeEl.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || activeEl && activeEl.isContentEditable) return;
+
+    // find the first visible (not hidden) question block
+    const activeQEl = Object.values(questions).find(q => !q.classList.contains('hidden'));
+    if (!activeQEl) return;
+    const btns = Array.from(activeQEl.querySelectorAll('.answer-options button'));
+
+    if (/^[1-9]$/.test(e.key)) {
+      const idx = parseInt(e.key, 10) - 1;
+      if (btns[idx]) btns[idx].click();
+    } else if (e.key === 'Enter') {
+      submitClassification();
+    } else if (e.key === '+') {
+      zoomIn();
+    } else if (e.key === '-') {
+      zoomOut();
+    }
+  }
+
+  // wire up question buttons
+  Object.entries(questions).forEach(([qid, el]) => {
+    el.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => handleAnswer(qid, btn));
+    });
+  });
+
+  // wire up controls safely (only if present)
+  const zoomInBtn = document.getElementById('zoom-in-button');
+  const zoomOutBtn = document.getElementById('zoom-out-button');
+  const resetZoomBtn = document.getElementById('reset-zoom-button');
+  if (zoomInBtn) zoomInBtn.addEventListener('click', zoomIn);
+  if (zoomOutBtn) zoomOutBtn.addEventListener('click', zoomOut);
+  if (resetZoomBtn) resetZoomBtn.addEventListener('click', resetZoom);
+
+  if (submitButton) submitButton.addEventListener('click', submitClassification);
+  if (exportButton) exportButton.addEventListener('click', ()=>exportToCSV());
+  if (restartButton) restartButton.addEventListener('click', ()=>restartClassification());
+  if (completionExport) completionExport.addEventListener('click', ()=>exportToCSV());
+  if (completionRestart) completionRestart.addEventListener('click', ()=>restartClassification(false));
+
+  document.addEventListener('keydown', handleKeyPress);
+
+  // theme toggle (simple)
+  const themeToggle = document.getElementById('theme-toggle');
+  themeToggle.addEventListener('click', () => {
+    const root = document.documentElement;
+    if (root.getAttribute('data-theme') === 'light') {
+      root.removeAttribute('data-theme');
+      themeToggle.textContent = 'light_mode';
+    } else {
+      root.setAttribute('data-theme', 'light');
+      themeToggle.textContent = 'dark_mode';
+    }
+  });
+
+  // start
+  loadCurve(currentCurveIndex);
+
+});
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kepler Transit Hunter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  
+  <style>
+    :root {
+      --kepler-bg-color: #0a0e17;
+      --kepler-panel-color: rgba(18, 24, 38, 0.9);
+      --kepler-border-color: #2a3a5c;
+      --kepler-font-color: #d4e2f7;
+      --kepler-font-secondary: #8ba3c7;
+      --kepler-accent-color: #4d7cfe;
+      --kepler-accent-hover: #6b95ff;
+      --kepler-success-color: #2ecc71;
+      --kepler-warning-color: #f1c40f;
+    }
+    [data-theme="light"] {
+      --kepler-bg-color: #f0f5ff;
+      --kepler-panel-color: #ffffff;
+      --kepler-border-color: #c2d4ff;
+      --kepler-font-color: #1a2b4c;
+      --kepler-font-secondary: #4a658c;
+      --kepler-accent-color: #2d62ff;
+      --kepler-accent-hover: #1a4de6;
+      --kepler-success-color: #27ae60;
+      --kepler-warning-color: #e6b400;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: var(--kepler-bg-color);
+      color: var(--kepler-font-color);
+      padding: 20px;
+    }
+
+    /* Kepler App Layout */
+    .kepler-app-container {
+      width: 100%; 
+      max-width: 1400px; 
+      margin: auto;
+      backdrop-filter: blur(10px);
+      background-color: rgba(10, 14, 23, 0.7);
+      border: 1px solid var(--kepler-border-color);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 0 25px rgba(77, 124, 254, 0.2);
+      animation: keplerFadeIn 0.6s ease;
+    }
+    @keyframes keplerFadeIn { 
+      from {opacity:0; transform:translateY(10px);} 
+      to {opacity:1; transform:translateY(0);} 
+    }
+
+    .kepler-header { 
+      display: flex; 
+      align-items: center; 
+      margin-bottom: 20px; 
+    }
+    .kepler-header h1 { 
+      font-size: 1.8em; 
+      font-weight: 600; 
+      margin-right: auto;
+      background: linear-gradient(90deg, #4d7cfe, #8ba3c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .kepler-theme-toggle { 
+      cursor: pointer; 
+      border: none; 
+      background: none; 
+      font-size: 1.5em; 
+      color: var(--kepler-font-color); 
+    }
+
+    /* Kepler Grid Layout */
+    .kepler-classifier-grid { 
+      display: flex; 
+      gap: 20px; 
+    }
+    .kepler-display-panel { 
+      flex: 3; 
+      min-width: 0; 
+    }
+    .kepler-task-panel {
+      flex: 1; 
+      background-color: var(--kepler-panel-color);
+      border: 1px solid var(--kepler-border-color); 
+      border-radius: 8px;
+      padding: 20px; 
+      align-self: flex-start; 
+      position: sticky; 
+      top: 20px;
+      animation: keplerFadeIn 0.5s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Kepler Image Box */
+    .kepler-image-box {
+      background-color: var(--kepler-panel-color);
+      border: 1px solid var(--kepler-border-color);
+      border-radius: 8px; 
+      padding: 10px;
+    }
+    .kepler-image-header {
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center;
+      padding: 5px 10px; 
+      margin-bottom: 10px;
+    }
+    .kepler-image-title { 
+      font-weight: 600; 
+      color: var(--kepler-accent-color);
+    }
+    .kepler-image-controls button {
+      background: none; 
+      border: none;
+      color: var(--kepler-font-secondary); 
+      cursor: pointer; 
+      padding: 5px;
+      transition: color 0.2s;
+    }
+    .kepler-image-controls button:hover { 
+      color: var(--kepler-font-color); 
+    }
+    .kepler-image-container { 
+      overflow: hidden; 
+    }
+    #kepler-light-curve-image {
+      width: 100%; 
+      border-radius: 4px; 
+      display: block;
+      transition: transform 0.3s ease;
+      transform-origin: center center;
+    }
+    
+    /* Kepler Task Panel */
+    .kepler-question-block { 
+      margin-bottom: 25px; 
+      opacity: 0; 
+      transform: translateY(10px); 
+      transition: all 0.4s; 
+    }
+    .kepler-question-block.visible { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+    .kepler-question-text { 
+      margin-bottom: 15px; 
+      font-weight: 600; 
+      line-height: 1.5; 
+    }
+    .kepler-answer-options button {
+      display: flex; 
+      align-items: center; 
+      gap: 10px;
+      width: 100%; 
+      padding: 12px; 
+      margin-bottom: 8px;
+      background-color: transparent;
+      border: 1px solid var(--kepler-border-color);
+      color: var(--kepler-font-color); 
+      text-align: left; 
+      font-size: 0.95em;
+      cursor: pointer; 
+      border-radius: 6px;
+      transition: all 0.2s ease;
+    }
+    .kepler-answer-options button:hover {
+      border-color: var(--kepler-accent-hover);
+      background-color: rgba(77, 124, 254, 0.08);
+    }
+    .kepler-answer-options button.selected {
+      background-color: var(--kepler-accent-color);
+      border-color: var(--kepler-accent-color);
+      color: white;
+    }
+    .kepler-key-hint {
+      font-size: 0.8em; 
+      font-weight: 300;
+      padding: 2px 6px; 
+      border: 1px solid var(--kepler-border-color);
+      border-radius: 4px;
+    }
+    #kepler-submit-button {
+      width: 100%; 
+      padding: 12px 15px;
+      background-color: var(--kepler-warning-color);
+      color: var(--kepler-bg-color); 
+      border: none;
+      font-size: 1em; 
+      font-weight: bold;
+      cursor: pointer; 
+      border-radius: 6px;
+      opacity: 0.5; 
+      pointer-events: none;
+      transition: all 0.3s; 
+      display: flex;
+      align-items: center; 
+      justify-content: center; 
+      gap: 10px;
+      margin-top: 8px;
+    }
+    #kepler-submit-button.enabled { 
+      opacity: 1; 
+      pointer-events: auto; 
+    }
+
+    /* Kepler Tab Styles */
+    .kepler-tab-nav { 
+      display: flex; 
+      border-bottom: 1px solid var(--kepler-border-color); 
+      margin-bottom: 15px; 
+    }
+    .kepler-tab-btn {
+        padding: 10px 15px; 
+        background: none; 
+        border: none;
+        color: var(--kepler-font-secondary); 
+        cursor: pointer;
+        border-bottom: 3px solid transparent; 
+        transition: all 0.2s;
+        font-weight: 600; 
+        font-size: 1em; 
+        margin-bottom: -1px;
+    }
+    .kepler-tab-btn:hover { 
+      color: var(--kepler-font-color); 
+    }
+    .kepler-tab-btn.active { 
+      color: var(--kepler-accent-hover); 
+      border-bottom-color: var(--kepler-accent-hover); 
+    }
+    .kepler-tab-content { 
+      display: none; 
+    }
+    .kepler-tab-content.active { 
+      display: block; 
+      animation: keplerFadeIn 0.4s; 
+    }
+
+    /* Kepler Tutorial Styles */
+    .kepler-tutorial-section { 
+      margin-bottom: 25px; 
+    }
+    .kepler-tutorial-section h3 { 
+      margin-bottom: 10px; 
+      color: var(--kepler-accent-hover); 
+      font-size: 1.1em; 
+      border-bottom: 1px solid var(--kepler-border-color); 
+      padding-bottom: 8px; 
+    }
+    .kepler-tutorial-section p { 
+      font-size: 0.9em; 
+      line-height: 1.6; 
+      margin-bottom: 10px; 
+      color: var(--kepler-font-secondary); 
+    }
+    .kepler-tutorial-section p b { 
+      color: var(--kepler-font-color); 
+    }
+    .kepler-tutorial-section img { 
+      max-width: 100%; 
+      border-radius: 4px; 
+      margin-top: 10px; 
+      border: 1px solid var(--kepler-border-color); 
+    }
+
+    /* Kepler Completion Screen */
+    .kepler-completion-screen {
+      text-align: center; 
+      padding: 30px;
+      background-color: var(--kepler-panel-color);
+      border: 1px solid var(--kepler-border-color);
+      border-radius: 8px;
+    }
+    .kepler-hidden { 
+      display: none !important; 
+    }
+
+    /* Kepler Action Buttons */
+    .kepler-task-actions { 
+      display:flex; 
+      gap:8px; 
+      margin-top:10px; 
+    }
+    .kepler-small-btn { 
+      padding:8px 10px; 
+      border-radius:6px; 
+      border:1px solid var(--kepler-border-color); 
+      background:none; 
+      color:var(--kepler-font-secondary); 
+      cursor:pointer; 
+    }
+    .kepler-small-btn:hover { 
+      color: var(--kepler-font-color); 
+      border-color: var(--kepler-accent-hover); 
+    }
+
+    @media (max-width: 900px) {
+      .kepler-classifier-grid { 
+        flex-direction: column; 
+      }
+      .kepler-task-panel { 
+        position: static; 
+        width: 100%; 
+        max-height: none; 
+      }
+    }
+
+    /* Kepler Toast */
+    #kepler-toast {
+      position: fixed; 
+      right: 20px; 
+      bottom: 20px;
+      background: rgba(10, 14, 23, 0.9); 
+      color: white; 
+      padding: 10px 14px;
+      border-radius: 8px; 
+      display: none; 
+      z-index: 9999;
+      border: 1px solid var(--kepler-border-color);
+    }
+    #kepler-toast.show { 
+      display: block; 
+    }
+  </style>
+</head>
+<body>
+
+<div class="kepler-app-container">
+  <header class="kepler-header">
+    <h1>Kepler Transit Hunter</h1>
+    <button id="kepler-theme-toggle" class="kepler-theme-toggle material-icons">light_mode</button>
+  </header>
+
+  <main id="kepler-classifier-main" class="kepler-classifier-grid">
+    <div class="kepler-display-panel">
+      <div class="kepler-image-box">
+        <div class="kepler-image-header">
+          <div id="kepler-image-metadata" class="kepler-image-title">KIC 6721123; Period = 0.532860 d</div>
+          <div class="kepler-image-controls">
+            <button id="kepler-zoom-in-button" title="Zoom In"><i class="material-icons">zoom_in</i></button>
+            <button id="kepler-zoom-out-button" title="Zoom Out"><i class="material-icons">zoom_out</i></button>
+            <button id="kepler-reset-zoom-button" title="Reset Zoom"><i class="material-icons">restart_alt</i></button>
+          </div>
+        </div>
+        <div class="kepler-image-container">
+          <img id="kepler-light-curve-image" src="KIC_6721123_advanced_transit.png" alt="Kepler Light Curve"/>
+        </div>
+      </div>
+    </div>
+
+    <div class="kepler-task-panel">
+      <div class="kepler-tab-nav">
+        <button class="kepler-tab-btn active" data-kepler-tab="task">CLASSIFY</button>
+        <button class="kepler-tab-btn" data-kepler-tab="tutorial">GUIDE</button>
+      </div>
+
+      <div id="kepler-task-content" class="kepler-tab-content active">
+        <div id="kepler-task-questions">
+          <!-- Question 1 -->
+          <div id="kepler-question1" class="kepler-question-block visible">
+            <div class="kepler-question-text"><b>Light Curve (Top Panel):</b> Do you see clearly visible periodic dips in the light curve?</div>
+            <div class="kepler-answer-options">
+              <button data-kepler-answer="Yes">Yes <span class="kepler-key-hint" style="margin-left:auto">1</span></button>
+              <button data-kepler-answer="No">No <span class="kepler-key-hint" style="margin-left:auto">2</span></button>
+            </div>
+          </div>
+
+          <!-- Question 2 -->
+          <div id="kepler-question2" class="kepler-question-block kepler-hidden">
+            <div class="kepler-question-text"><b>Phase Curve (Middle Panel):</b> Does the phased light curve show a clear transit shape?</div>
+            <div class="kepler-answer-options">
+              <button data-kepler-answer="Clear transit">Yes, clear transit shape <span class="kepler-key-hint" style="margin-left:auto">1</span></button>
+              <button data-kepler-answer="V-shaped">V-shaped or unusual transit <span class="kepler-key-hint" style="margin-left:auto">2</span></button>
+              <button data-kepler-answer="No clear transit">No clear transit shape <span class="kepler-key-hint" style="margin-left:auto">3</span></button>
+            </div>
+          </div>
+
+          <!-- Question 3 -->
+          <div id="kepler-question3" class="kepler-question-block kepler-hidden">
+            <div class="kepler-question-text"><b>BLS Periodogram (Bottom Panel):</b> Does the strongest peak in the periodogram match the detected period?</div>
+            <div class="kepler-answer-options">
+              <button data-kepler-answer="Strong match">Yes, strong peak matches <span class="kepler-key-hint" style="margin-left:auto">1</span></button>
+              <button data-kepler-answer="Multiple peaks">Multiple significant peaks <span class="kepler-key-hint" style="margin-left:auto">2</span></button>
+              <button data-kepler-answer="No clear peak">No clear dominant peak <span class="kepler-key-hint" style="margin-left:auto">3</span></button>
+            </div>
+          </div>
+          
+          <!-- Question 4 -->
+          <div id="kepler-question4" class="kepler-question-block kepler-hidden">
+            <div class="kepler-question-text"><b>Overall Assessment:</b> Based on all panels, how confident are you this is a real transit signal?</div>
+            <div class="kepler-answer-options">
+              <button data-kepler-answer="High confidence">High confidence - clear transit <span class="kepler-key-hint" style="margin-left:auto">1</span></button>
+              <button data-kepler-answer="Moderate confidence">Moderate confidence - likely transit <span class="kepler-key-hint" style="margin-left:auto">2</span></button>
+              <button data-kepler-answer="Low confidence">Low confidence - questionable <span class="kepler-key-hint" style="margin-left:auto">3</span></button>
+              <button data-kepler-answer="Not a transit">Not a transit signal <span class="kepler-key-hint" style="margin-left:auto">4</span></button>
+            </div>
+          </div>
+        </div>
+
+        <div class="kepler-task-actions">
+          <button id="kepler-submit-button" class="" title="Submit answers (Enter)">Submit Classification</button>
+          <button id="kepler-export-button" class="kepler-small-btn" title="Export CSV">Export</button>
+          <button id="kepler-restart-button" class="kepler-small-btn" title="Restart">Restart</button>
+        </div>
+      </div>
+
+      <div id="kepler-tutorial-content" class="kepler-tab-content">
+        <div class="kepler-tutorial-section">
+          <h3>Introduction to Kepler Data</h3>
+          <p>This classifier helps identify potential exoplanet transits in Kepler light curves. Each image contains three panels:</p>
+          <ul style="margin-left: 20px; margin-bottom: 10px;">
+            <li><b>Top:</b> Raw light curve showing brightness over time</li>
+            <li><b>Middle:</b> Phase-folded light curve at the detected period</li>
+            <li><b>Bottom:</b> BLS periodogram showing signal strength at different periods</li>
+          </ul>
+          <p>A transit occurs when a planet passes in front of its host star, causing a temporary dip in brightness.</p>
+        </div>
+
+        <div class="kepler-tutorial-section">
+          <h3>Question 1: Periodic Dips in Light Curve</h3>
+          <p><b>The Science:</b> Look for repeating, symmetric dips in the top panel. Real transits should appear at regular intervals and have similar depths.</p>
+          <p>Check if the dips are:</p>
+          <ul style="margin-left: 20px;">
+            <li>Regularly spaced (periodic)</li>
+            <li>Consistent in depth and shape</li>
+            <li>Distinct from noise or instrumental artifacts</li>
+          </ul>
+        </div>
+
+        <div class="kepler-tutorial-section">
+          <h3>Question 2: Phase-Folded Transit Shape</h3>
+          <p><b>The Science:</b> The middle panel shows all data folded at the detected period. A good transit candidate will show:</p>
+          <ul style="margin-left: 20px;">
+            <li>A flat baseline outside of transit</li>
+            <li>A clear, symmetric dip centered at phase 0</li>
+            <li>Consistent depth across all folded transits</li>
+          </ul>
+          <p>V-shaped transits may indicate grazing eclipsing binaries rather than planetary transits.</p>
+        </div>
+
+        <div class="kepler-tutorial-section">
+          <h3>Question 3: BLS Periodogram Quality</h3>
+          <p><b>The Science:</b> The BLS (Box Least Squares) algorithm searches for periodic transit signals. A strong detection shows:</p>
+          <ul style="margin-left: 20px;">
+            <li>A single dominant peak at the transit period</li>
+            <li>Significant power compared to noise level</li>
+            <li>Harmonics at integer fractions of the period (common for eclipsing binaries)</li>
+          </ul>
+          <p>Multiple strong peaks may indicate an alias or incorrect period detection.</p>
+        </div>
+
+        <div class="kepler-tutorial-section">
+          <h3>Question 4: Overall Confidence</h3>
+          <p><b>The Science:</b> Combine evidence from all panels to assess the likelihood of a real transit:</p>
+          <ul style="margin-left: 20px;">
+            <li><b>High confidence:</b> Clear periodic dips, clean phase-folded curve, strong BLS peak</li>
+            <li><b>Moderate confidence:</b> Some evidence but with minor issues (noise, weak signal)</li>
+            <li><b>Low confidence:</b> Questionable signal that could be noise or artifacts</li>
+            <li><b>Not a transit:</b> No convincing evidence of a transit signal</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Kepler completion container (hidden until finished) -->
+  <div id="kepler-completion-container" class="kepler-hidden" style="max-width:1200px;margin:20px auto;">
+    <div class="kepler-completion-screen">
+      <h2>Classification Complete!</h2>
+      <p>Thank you for helping identify potential exoplanet transits in Kepler data.</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:12px;">
+        <button id="kepler-completion-export" class="kepler-small-btn">Export Results</button>
+        <button id="kepler-completion-restart" class="kepler-small-btn">Start New Session</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="kepler-toast"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Kepler light curve data
+  const keplerLightCurveData = [
+    { id: 'KIC 6721123', url: 'KIC_6721123_advanced_transit.png', period: 0.532860 },
+    { id: 'KIC 8256049', url: 'KIC_8256049_advanced_transit.png', period: 8.187052 },
+    { id: 'KIC 8414716', url: 'KIC_8414716_advanced_transit.png', period: 16.169368 },
+    { id: 'KIC 8628973', url: 'KIC_8628973_advanced_transit.png', period: 16.169368 },
+    { id: 'KIC 9141746', url: 'KIC_9141746_advanced_transit.png', period: 16.169368 },
+    { id: 'KIC 10797460', url: 'KIC_10797460_advanced_transit.png', period: 16.169368 },
+    { id: 'KIC 10910878', url: 'KIC_10910878_advanced_transit.png', period: 16.169368 },
+    { id: 'KIC 11153539', url: 'KIC_11153539_advanced_transit.png', period: 16.169368 },
+    { id: 'KIC 11507101', url: 'KIC_11507101_advanced_transit.png', period: 16.169368 },
+    // Add more Kepler targets as needed
+  ];
+
+  let keplerCurrentCurveIndex = 0;
+  let keplerAllClassifications = [];
+  let keplerCurrentClassification = {};
+  let keplerCurrentZoom = 1;
+
+  // DOM elements
+  const keplerMainClassifier = document.getElementById('kepler-classifier-main');
+  const keplerCompletionContainer = document.getElementById('kepler-completion-container');
+  const keplerImageElement = document.getElementById('kepler-light-curve-image');
+  const keplerMetadataElement = document.getElementById('kepler-image-metadata');
+  const keplerSubmitButton = document.getElementById('kepler-submit-button');
+  const keplerExportButton = document.getElementById('kepler-export-button');
+  const keplerRestartButton = document.getElementById('kepler-restart-button');
+  const keplerCompletionExport = document.getElementById('kepler-completion-export');
+  const keplerCompletionRestart = document.getElementById('kepler-completion-restart');
+  const keplerToast = document.getElementById('kepler-toast');
+
+  // Tab functionality
+  document.querySelectorAll('.kepler-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.kepler-tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.kepler-tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.keplerTab;
+      const tabEl = document.getElementById(`kepler-${tab}-content`);
+      if (tabEl) tabEl.classList.add('active');
+    });
+  });
+
+  // Question blocks
+  const keplerTaskQuestionsContainer = document.getElementById('kepler-task-questions');
+  const keplerQuestionBlocks = Array.from(keplerTaskQuestionsContainer.querySelectorAll('.kepler-question-block'));
+
+  const keplerQuestions = {};
+  keplerQuestionBlocks.forEach((el, idx) => {
+    const qid = el.id || `kepler-q${idx + 1}`;
+    keplerQuestions[qid] = el;
+  });
+
+  // Toast helper
+  function showKeplerToast(msg, ms = 1800) {
+    keplerToast.textContent = msg;
+    keplerToast.classList.add('show');
+    setTimeout(() => keplerToast.classList.remove('show'), ms);
+  }
+
+  // Load a curve into the UI
+  function loadKeplerCurve(index) {
+    if (index >= keplerLightCurveData.length) return showKeplerCompletionScreen();
+    const curve = keplerLightCurveData[index];
+    if (curve.url) keplerImageElement.src = curve.url;
+    keplerMetadataElement.textContent = `${curve.id}; Period = ${curve.period} d`;
+    resetKeplerClassifierState();
+  }
+
+  // Reset UI state for a new classification
+  function resetKeplerClassifierState() {
+    keplerCurrentClassification = {};
+    const qEls = Object.values(keplerQuestions);
+    qEls.forEach((qEl, i) => {
+      if (i === 0) {
+        qEl.classList.remove('kepler-hidden');
+        qEl.classList.add('visible');
+      } else {
+        qEl.classList.add('kepler-hidden');
+        qEl.classList.remove('visible');
+      }
+      qEl.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+    });
+    keplerSubmitButton.classList.remove('enabled');
+    resetKeplerZoom();
+  }
+
+  // Handle a user choice on a question
+  function handleKeplerAnswer(qid, btn) {
+    const answer = btn.dataset.keplerAnswer;
+    keplerCurrentClassification[qid] = answer;
+    
+    const qEl = keplerQuestions[qid];
+    if (!qEl) return;
+    qEl.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+
+    // Reveal next question if exists
+    const keys = Object.keys(keplerQuestions);
+    const idx = keys.indexOf(qid);
+    const next = keys[idx + 1];
+    if (next) {
+      const nextEl = keplerQuestions[next];
+      if (nextEl) {
+        nextEl.classList.remove('kepler-hidden');
+        setTimeout(() => nextEl.classList.add('visible'), 30);
+      }
+    } else {
+      // Last question answered -> enable submit
+      keplerSubmitButton.classList.add('enabled');
+    }
+  }
+
+  // Submit handler
+  function submitKeplerClassification() {
+    if (!keplerSubmitButton.classList.contains('enabled')) return;
+    const record = Object.assign({}, keplerLightCurveData[keplerCurrentCurveIndex], { 
+      classification: {...keplerCurrentClassification} 
+    });
+    keplerAllClassifications.push(record);
+
+    showKeplerToast('Classification saved');
+
+    // Auto-advance
+    keplerCurrentCurveIndex++;
+    if (keplerCurrentCurveIndex < keplerLightCurveData.length) {
+      loadKeplerCurve(keplerCurrentCurveIndex);
+    } else {
+      showKeplerCompletionScreen();
+    }
+  }
+
+  // CSV export
+  function exportKeplerToCSV(showMsg = true) {
+    if (!keplerAllClassifications.length) {
+      showKeplerToast('No classifications to export');
+      return;
+    }
+    const headers = ['id', 'period'];
+    const qids = Object.keys(keplerQuestions);
+    headers.push(...qids);
+    const rows = keplerAllClassifications.map(c => {
+      const q = c.classification || {};
+      const vals = [c.id, c.period, ...qids.map(k => q[k] || 'N/A')];
+      return vals.map(v => typeof v === 'string' && v.includes(',') ? `"${v}"` : v).join(',');
+    });
+    const csvContent = headers.join(',') + '\n' + rows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'kepler_transit_classifications.csv';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    if (showMsg) showKeplerToast('Results exported to CSV');
+  }
+
+  // Completion screen UI
+  function showKeplerCompletionScreen() {
+    keplerMainClassifier.classList.add('kepler-hidden');
+    keplerCompletionContainer.classList.remove('kepler-hidden');
+  }
+
+  function restartKeplerClassification(confirmPrompt = true) {
+    if (confirmPrompt && !confirm('Restart and erase current progress?')) return;
+    keplerCurrentCurveIndex = 0;
+    keplerAllClassifications = [];
+    keplerCompletionContainer.classList.add('kepler-hidden');
+    keplerMainClassifier.classList.remove('kepler-hidden');
+    loadKeplerCurve(0);
+  }
+
+  // Zoom controls
+  function applyKeplerZoom() { 
+    keplerImageElement.style.transform = `scale(${keplerCurrentZoom})`; 
+  }
+  function keplerZoomIn() { 
+    keplerCurrentZoom = Math.min(3, +(keplerCurrentZoom + 0.2).toFixed(2)); 
+    applyKeplerZoom(); 
+  }
+  function keplerZoomOut() { 
+    keplerCurrentZoom = Math.max(1, +(keplerCurrentZoom - 0.2).toFixed(2)); 
+    applyKeplerZoom(); 
+  }
+  function resetKeplerZoom() { 
+    keplerCurrentZoom = 1; 
+    applyKeplerZoom(); 
+  }
+
+  // Keyboard handling
+  function handleKeplerKeyPress(e) {
+    const activeEl = document.activeElement;
+    const tag = activeEl && activeEl.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || activeEl && activeEl.isContentEditable) return;
+
+    const activeQEl = Object.values(keplerQuestions).find(q => !q.classList.contains('kepler-hidden'));
+    if (!activeQEl) return;
+    const btns = Array.from(activeQEl.querySelectorAll('.kepler-answer-options button'));
+
+    if (/^[1-9]$/.test(e.key)) {
+      const idx = parseInt(e.key, 10) - 1;
+      if (btns[idx]) btns[idx].click();
+    } else if (e.key === 'Enter') {
+      submitKeplerClassification();
+    } else if (e.key === '+') {
+      keplerZoomIn();
+    } else if (e.key === '-') {
+      keplerZoomOut();
+    }
+  }
+
+  // Wire up question buttons
+  Object.entries(keplerQuestions).forEach(([qid, el]) => {
+    el.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => handleKeplerAnswer(qid, btn));
+    });
+  });
+
+  // Wire up controls
+  const keplerZoomInBtn = document.getElementById('kepler-zoom-in-button');
+  const keplerZoomOutBtn = document.getElementById('kepler-zoom-out-button');
+  const keplerResetZoomBtn = document.getElementById('kepler-reset-zoom-button');
+  if (keplerZoomInBtn) keplerZoomInBtn.addEventListener('click', keplerZoomIn);
+  if (keplerZoomOutBtn) keplerZoomOutBtn.addEventListener('click', keplerZoomOut);
+  if (keplerResetZoomBtn) keplerResetZoomBtn.addEventListener('click', resetKeplerZoom);
+
+  if (keplerSubmitButton) keplerSubmitButton.addEventListener('click', submitKeplerClassification);
+  if (keplerExportButton) keplerExportButton.addEventListener('click', () => exportKeplerToCSV());
+  if (keplerRestartButton) keplerRestartButton.addEventListener('click', () => restartKeplerClassification());
+  if (keplerCompletionExport) keplerCompletionExport.addEventListener('click', () => exportKeplerToCSV());
+  if (keplerCompletionRestart) keplerCompletionRestart.addEventListener('click', () => restartKeplerClassification(false));
+
+  document.addEventListener('keydown', handleKeplerKeyPress);
+
+  // Theme toggle
+  const keplerThemeToggle = document.getElementById('kepler-theme-toggle');
+  keplerThemeToggle.addEventListener('click', () => {
+    const root = document.documentElement;
+    if (root.getAttribute('data-theme') === 'light') {
+      root.removeAttribute('data-theme');
+      keplerThemeToggle.textContent = 'light_mode';
+    } else {
+      root.setAttribute('data-theme', 'light');
+      keplerThemeToggle.textContent = 'dark_mode';
+    }
+  });
+
+  // Start the classifier
+  loadKeplerCurve(keplerCurrentCurveIndex);
+});
+</script>
+</body>
+</html>
+
+    <div class="grid g-2-1">
+      <!-- Classifier -->
+      <section class="panel" id="classifier">
+        <h2>Transit Classification Module</h2>
+      
+        <div class="three-panels" > <img style="width: 100%" src="b.png"></div><br>
+          <div class="three-panels" > <img style="width: 100%" src="c.png"></div> <br>
+          <div class="three-panels" > <img style="width: 100%" src="d.png"></div>
+        <div class="status" id="feedback">Awaiting classification…</div>
+        <div class="row" style="margin-top:8px;">
+          <div>Trials: <b id="total">0</b> · Accuracy: <b id="accuracy">0%</b></div>
+          <button class="btn" onclick="nextTask()">Next Target</button>
+          <button class="btn ghost" onclick="resetSession()">Reset Session</button>
+          <button class="btn" onclick="downloadSession()">Export Session (.csv)</button>
+        </div>
+      </section>
+
+      <!-- Analysis Controls -->
+      <section class="panel">
+        <h2>Instrument Controls</h2>
+        <div class="row" style="margin-bottom:8px;">
+          <label>Upload CSV:</label>
+          <input class="input" type="file" id="fileInput" accept=".csv" />
+        </div>
+        <div class="row">
+          <label><input type="checkbox" id="chkNormalize" /> Normalize</label>
+          <label><input type="checkbox" id="chkDetrend" /> Detrend (linear)</label>
+          <label>Smooth (MA window):
+            <select id="smoothWin">
+              <option value="1">1</option>
+              <option value="3">3</option>
+              <option value="5" selected>5</option>
+              <option value="9">9</option>
+              <option value="15">15</option>
+            </select>
+          </label>
+        </div>
+        <div class="row" style="margin-top:8px;">
+          <button class="btn" onclick="applyProcessing()">Apply Processing</button>
+          <button class="btn ghost" onclick="resetZooms()">Reset Zoom</button>
+          <button class="btn" onclick="runFFT()">Compute FFT / Periodogram</button>
+        </div>
+        <div class="small" style="margin-top:6px;">CSV format: two columns <code>time, flux</code> (no header needed). Evenly-sampled time recommended for FFT.</div>
+      </section>
+    </div>
+
+    <!-- Charts -->
+    <section class="panel">
+      <h2>Light Curve</h2>
+     <img style="width: 100%" src="l.jpg">
+      <div class="small" id="lcMeta" style="margin-top:6px;"></div>
+    </section>
+
+    <section class="panel">
+      <h2>Power Spectrum (FFT)</h2>
+      <img style="width: 100%" src="t.png">
+      <div class="small" id="fftMeta" style="margin-top:6px;"></div>
+    </section>
+
+    <!-- Console -->
+    <section class="panel">
+      <h2>Console</h2>
+      <div class="console" id="console"></div>
+    </section>
+  </main>
+
+  <button class="floating" id="floatToggle" title="Play/Pause Telemetry">▶</button>
+
+  <footer>
+    <div>© 2025 Team Planet Hunter · NASA-inspired Instrument UI</div>
+    <div>Chart.js · FFT · Zoom/Pan · Detrend · Smooth · Session Export</div>
+  </footer>
+
+<script>
+/* ---------- Utilities ---------- */
+const $ = (id) => document.getElementById(id);
+function scrollToId(id){ $(id)?.scrollIntoView({behavior:'smooth'}); }
+function fmt(n){ return Intl.NumberFormat().format(n); }
+function log(msg, cls='') {
+  const c = $("console");
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  const t = new Date().toLocaleTimeString();
+  line.textContent = `[${t}] ${msg}`;
+  c.appendChild(line);
+  c.scrollTop = c.scrollHeight;
+}
+
+/* ---------- Theme ---------- */
+$("toggleTheme").onclick = () => {
+  document.body.classList.toggle('light');
+  log('Theme toggled: ' + (document.body.classList.contains('light') ? 'Light' : 'Dark'));
+};
+
+/* ---------- Telemetry ---------- */
+let telemetryRunning = true;
+$("floatToggle").onclick = () => {
+  telemetryRunning = !telemetryRunning;
+  $("statsState").textContent = telemetryRunning ? "RUNNING" : "PAUSED";
+  $("floatToggle").textContent = telemetryRunning ? "⏸" : "▶";
+  log('Telemetry ' + (telemetryRunning ? 'resumed' : 'paused'));
+};
+let stats = { users: 1240, classifications: 12845, candidates: 327 };
+setInterval(()=>{
+  if(!telemetryRunning) return;
+  stats.users += Math.floor(Math.random()*3);
+  stats.classifications += Math.floor(Math.random()*7);
+  if(Math.random() < 0.3) stats.candidates += 1;
+  $("volunteers").textContent = fmt(stats.users);
+  $("classifications").textContent = fmt(stats.classifications);
+  $("candidates").textContent = fmt(stats.candidates);
+}, 1800);
+
+/* ---------- Light curve generator ---------- */
+function generateLightCurve(n=300, noise=0.004, transit=false){
+  const data = [];
+  const t0 = Math.floor(n*0.45), t1 = Math.floor(n*0.55);
+  for(let i=0;i<n;i++){
+    let flux = 1 + (Math.random()-0.5)*noise*2;
+    if(transit && i>=t0 && i<=t1){ flux -= 0.02; }
+    data.push({x:i, y:flux});
+  }
+  return data;
+}
+
+/* ---------- Classifier ---------- */
+let correctIndex=null, selection=null, total=0, correct=0, sessionRows=[["trial","picked_panel","correct_panel","is_correct"]];
+const panelsDiv = $("panels");
+function makeTask(){
+  correctIndex = Math.floor(Math.random()*3);
+  selection = null;
+  panelsDiv.innerHTML = "";
+  for(let i=0;i<3;i++){
+    const wrap = document.createElement('div');
+    wrap.className = "panelBtn";
+    const label = document.createElement('div');
+    label.className = "small";
+    label.style.margin = "0 0 6px 2px";
+    label.textContent = `Panel ${i+1}`;
+    const cvs = document.createElement('canvas');
+    cvs.height = 160; cvs.className = "chart";
+    wrap.appendChild(label);
+    wrap.appendChild(cvs);
+    wrap.onclick = ()=> pick(i, wrap);
+    panelsDiv.appendChild(wrap);
+
+    new Chart(cvs, {
+      type: 'line',
+      data: { datasets: [{
+        data: generateLightCurve(280, 0.004 + Math.random()*0.004, i===correctIndex),
+        borderWidth: 2, pointRadius: 0, borderColor: getComputedStyle(document.body).getPropertyValue('--accent').trim()
+      }]},
+      options: {
+        animation: false,
+        responsive: true,
+        plugins: { legend: { display:false }, tooltip: { enabled:false } },
+        scales: { x: { display:false }, y: { display:false } }
+      }
+    });
+  }
+  $("feedback").textContent = "Awaiting classification…";
+  $("feedback").className = "status";
+}
+function pick(i, wrap){
+  if(selection!==null) return;
+  selection = i; total++;
+  const isCorrect = (i===correctIndex);
+  if(isCorrect){
+    correct++; wrap.classList.add('correct');
+    $("feedback").textContent = "✔ Correct! Transit located.";
+    $("feedback").className = "status good";
+    log(`Classifier: Correct pick (panel ${i+1}).`);
+  } else {
+    wrap.classList.add('wrong');
+    $("feedback").textContent = `✖ Incorrect. Transit was in Panel ${correctIndex+1}.`;
+    $("feedback").className = "status bad";
+    log(`Classifier: Wrong pick (picked ${i+1}, correct ${correctIndex+1}).`, 'warn');
+  }
+  $("total").textContent = total;
+  $("accuracy").textContent = Math.round(100*correct/Math.max(1,total)) + "%";
+  sessionRows.push([total, i+1, correctIndex+1, isCorrect ? 1 : 0]);
+}
+function nextTask(){ makeTask(); }
+function resetSession(){
+  total=0; correct=0; sessionRows = [["trial","picked_panel","correct_panel","is_correct"]];
+  $("total").textContent = "0"; $("accuracy").textContent = "0%";
+  $("feedback").textContent = "Session reset."; $("feedback").className = "status";
+  makeTask(); log('Session reset.');
+}
+function downloadSession(){
+  const csv = sessionRows.map(r=>r.join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "planet_hunter_session.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  log('Session CSV exported.');
+}
+makeTask();
+
+/* ---------- Chart.js base config ---------- */
+Chart.register(window['chartjs-plugin-zoom']);
+function axisColor(){ return getComputedStyle(document.body).classList?.contains('light') ? '#0b0d10' : '#e5e7eb'; }
+
+/* ---------- Light curve chart ---------- */
+let lcChart, fftChart;
+const lcCtx = $("lcChart").getContext('2d');
+lcChart = new Chart(lcCtx, {
+  type: 'line',
+  data: { datasets: [{
+    label: 'Light Curve',
+    data: generateLightCurve(400, 0.004, true),
+    borderWidth: 2, pointRadius: 0,
+    borderColor: getComputedStyle(document.body).getPropertyValue('--accent').trim()
+  }]},
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: axisColor() } },
+      zoom: {
+        zoom: { wheel: {enabled:true}, pinch: {enabled:true}, mode: 'x' },
+        pan: { enabled: true, mode: 'x' }
+      }
+    },
+    scales: {
+      x: { ticks: { color: axisColor() }, grid: { color: 'rgba(255,255,255,0.06)' } },
+      y: { ticks: { color: axisColor() }, grid: { color: 'rgba(255,255,255,0.06)' } }
+    }
+  }
+});
+$("lcMeta").textContent = "Simulated light curve loaded (transit depth ~2%).";
+
+/* ---------- FFT / Periodogram ---------- */
+/* Cooley–Tukey radix-2 FFT (real input helper). */
+function nextPow2(n){ return 1 << Math.ceil(Math.log2(n)); }
+function fftRadix2(re, im){
+  const n = re.length;
+  // bit-reversal
+  for(let i=0,j=0;i<n;i++){
+    if(i<j){ [re[i],re[j]]=[re[j],re[i]]; [im[i],im[j]]=[im[j],im[i]]; }
+    let m = n>>1;
+    while(j>=m && m>0){ j-=m; m>>=1; }
+    j+=m;
+  }
+  // butterflies
+  for(let len=2; len<=n; len<<=1){
+    const ang = -2*Math.PI/len;
+    const wlen_re = Math.cos(ang), wlen_im = Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let w_re=1, w_im=0;
+      for(let j=0;j<(len>>1);j++){
+        const u_re = re[i+j], u_im = im[i+j];
+        const v_re = re[i+j+(len>>1)]*w_re - im[i+j+(len>>1)]*w_im;
+        const v_im = re[i+j+(len>>1)]*w_im + im[i+j+(len>>1)]*w_re;
+        re[i+j] = u_re + v_re;
+        im[i+j] = u_im + v_im;
+        re[i+j+(len>>1)] = u_re - v_re;
+        im[i+j+(len>>1)] = u_im - v_im;
+        const nw_re = w_re*wlen_re - w_im*wlen_im;
+        const nw_im = w_re*wlen_im + w_im*wlen_re;
+        w_re = nw_re; w_im = nw_im;
+      }
+    }
+  }
+}
+function linearDetrend(xs, ys){
+  const n = xs.length;
+  let sumx=0,sumy=0,sumxy=0,sumxx=0;
+  for(let i=0;i<n;i++){ sumx+=xs[i]; sumy+=ys[i]; sumxy+=xs[i]*ys[i]; sumxx+=xs[i]*xs[i]; }
+  const m = (n*sumxy - sumx*sumy)/(n*sumxx - sumx*sumx);
+  const b = (sumy - m*sumx)/n;
+  return ys.map((y,i)=> y - (m*xs[i]+b));
+}
+function movingAverage(arr, w){
+  if(w<=1) return arr.slice();
+  const out = Array(arr.length).fill(0);
+  const half = Math.floor(w/2);
+  for(let i=0;i<arr.length;i++){
+    let s=0,c=0;
+    for(let k=-half;k<=half;k++){
+      const j=i+k; if(j<0||j>=arr.length) continue;
+      s+=arr[j]; c++;
+    }
+    out[i]=s/c;
+  }
+  return out;
+}
+function estimateDt(xs){
+  let s=0, c=0;
+  for(let i=1;i<xs.length;i++){ const d=xs[i]-xs[i-1]; if(isFinite(d) && d>0){ s+=d; c++; } }
+  return c? s/c : 1;
+}
+function computeFFT(xs, ys){
+  const N0 = ys.length;
+  const N = nextPow2(N0);
+  const re = new Array(N).fill(0), im = new Array(N).fill(0);
+  for(let i=0;i<N0;i++) re[i]=ys[i];
+  const dt = estimateDt(xs);
+  fftRadix2(re, im);
+  const mags = [];
+  const freqs = [];
+  const half = Math.floor(N/2);
+  for(let k=0;k<=half;k++){
+    const mag2 = re[k]*re[k]+im[k]*im[k];
+    const f = k/(N*dt);
+    freqs.push(f);
+    mags.push(mag2);
+  }
+  return {freqs, power:mags};
+}
+
+/* ---------- Data processing & charts ---------- */
+function resetZooms(){
+  lcChart.resetZoom();
+  if(fftChart) fftChart.resetZoom();
+  log('Zoom reset.');
+}
+function currentLC(){
+  const ds = lcChart.data.datasets[0];
+  const xs = ds.data.map(p=>p.x);
+  const ys = ds.data.map(p=>p.y);
+  return {xs, ys};
+}
+function setLC(xs, ys, label='Light Curve', colorVar='--accent'){
+  lcChart.data.datasets[0].label = label;
+  lcChart.data.datasets[0].data = xs.map((x,i)=>({x, y:ys[i]}));
+  lcChart.data.datasets[0].borderColor = getComputedStyle(document.body).getPropertyValue(colorVar).trim();
+  lcChart.update();
+}
+function applyProcessing(){
+  let {xs, ys} = currentLC();
+  const normalize = $("chkNormalize").checked;
+  const detrend = $("chkDetrend").checked;
+  const w = parseInt($("smoothWin").value, 10);
+
+  if(detrend){ ys = linearDetrend(xs, ys); }
+  if(w>1){ ys = movingAverage(ys, w); }
+  if(normalize){
+    // normalize to median ~1
+    const sorted = ys.slice().sort((a,b)=>a-b);
+    const med = sorted[Math.floor(sorted.length/2)] || 1;
+    ys = ys.map(v=> v/med);
+  }
+  setLC(xs, ys, 'Processed Light Curve', '--accent');
+  $("lcMeta").textContent = `Processing applied — ${detrend?'Detrend; ':''}${w>1?`Smooth w=${w}; `:''}${normalize?'Normalize; ':''}`.replace(/; $/,'');
+  log('Processing applied to light curve.');
+}
+
+/* ---------- FFT actions ---------- */
+function runFFT(){
+  const {xs, ys} = currentLC();
+  if(xs.length<8){ log('FFT skipped: insufficient points.', 'warn'); return; }
+  const {freqs, power} = computeFFT(xs, ys);
+  // ignore DC (k=0) when finding peak
+  let peakIdx = 1, peakVal = power[1];
+  for(let i=2;i<power.length;i++){
+    if(power[i]>peakVal){ peakVal=power[i]; peakIdx=i; }
+  }
+  const f0 = freqs[peakIdx];
+  const period = f0>0 ? 1/f0 : Infinity;
+
+  // build chart
+  const ctx = $("fftChart").getContext('2d');
+  if(fftChart) fftChart.destroy();
+  fftChart = new Chart(ctx, {
+    type: 'line',
+    data: { datasets: [{
+      label: 'Power Spectrum',
+      data: freqs.map((f,i)=>({x:f, y:power[i]})),
+      borderWidth: 2, pointRadius: 0,
+      borderColor: getComputedStyle(document.body).getPropertyValue('--accent-2').trim()
+    }]},
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: axisColor() } },
+        zoom: { zoom: { wheel:{enabled:true}, pinch:{enabled:true}, mode: 'x' }, pan: {enabled:true, mode:'x'} },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => `f=${ctx.parsed.x.toFixed(4)}, P=${ctx.parsed.y.toExponential(3)}`
+          }
+        }
+      },
+      scales: {
+        x: { title: {display:true, text:'Frequency (1/time)', color: axisColor()}, ticks:{color:axisColor()}, grid:{color:'rgba(255,255,255,0.06)'} },
+        y: { title: {display:true, text:'Power', color: axisColor()}, ticks:{color:axisColor()}, grid:{color:'rgba(255,255,255,0.06)'} }
+      }
+    }
+  });
+  $("fftMeta").textContent = isFinite(period)
+    ? `Dominant frequency f₀ ≈ ${f0.toFixed(4)} → Period ≈ ${period.toFixed(2)} time units (ignoring DC).`
+    : 'Dominant frequency unresolved.';
+  log(`FFT computed. Peak f0=${f0.toFixed(4)} → Period=${isFinite(period)?period.toFixed(2):'∞'}.`);
+}
+
+/* ---------- CSV Upload ---------- */
+$("fileInput").addEventListener("change", (e) => {
+  const file = e.target.files?.[0];
+  if(!file){ return; }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const lines = (ev.target.result || "").toString().trim().split(/\r?\n/);
+      const rows = lines.map(l => l.split(/[,\s]+/)).filter(r => r.length>=2 && !isNaN(+r[0]) && !isNaN(+r[1]));
+      if(rows.length<3){ log('Upload failed: not enough valid rows.', 'err'); return; }
+      const xs = rows.map(r=>+r[0]);
+      const ys = rows.map(r=>+r[1]);
+      setLC(xs, ys, 'Uploaded Light Curve', '--accent');
+      $("lcMeta").textContent = `Loaded ${rows.length} points from ${file.name}.`;
+      log(`CSV loaded: ${file.name}, ${rows.length} points.`);
+    } catch(err){
+      log('Upload error: ' + err.message, 'err');
+    }
+  };
+  reader.readAsText(file);
+});
+
+/* ---------- Initial FFT (for demo) ---------- */
+runFFT();
+</script>
+</body>
+</html>
+
+  <canvas id="starfield"></canvas>
+  <!-- Radar Pulse Overlay -->
+  <canvas id="radar"></canvas>
+
+
+
+  <!-- Panels -->
+  <div class="panel">
+    <h2>📡 Incoming Transmission</h2>
+    <div class="console">
+      <div>Receiving deep space data...</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Telemetry</h3>
+    <p>Volunteers: <span id="volunteers">0</span></p>
+    <p>Classifications: <span id="classifications">0</span></p>
+    <p>Candidate Signals: <span id="candidates">0</span></p>
+    <button class="btn">Analyze Signal</button>
+  </div>
+
+  <script>
+  /* === Hyperspace Incoming Starfield === */
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  let centerX, centerY;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    centerX = canvas.width / 2;
+    centerY = canvas.height / 2;
+    stars = Array.from({ length: 400 }, () => ({
+      x: Math.random() * canvas.width - centerX,
+      y: Math.random() * canvas.height - centerY,
+      z: Math.random() * canvas.width
+    }));
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function animateStars() {
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    stars.forEach(s => {
+      s.z -= 1; // speed of incoming stars
+      if (s.z <= 0) {
+        s.x = Math.random() * canvas.width - centerX;
+        s.y = Math.random() * canvas.height - centerY;
+        s.z = canvas.width;
+      }
+      let k = 528.0 / s.z; // perspective
+      let px = s.x * k + centerX;
+      let py = s.y * k + centerY;
+      let size = (1 - s.z / canvas.width) * 5;
+      if (px >= 0 && px < canvas.width && py >= 0 && py < canvas.height) {
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.arc(px, py, size, 0, Math.PI * 9);
+        ctx.fill();
+      }
+    });
+
+    requestAnimationFrame(animateStars);
+  }
+  animateStars();
+
+  /* === Radar Pulse === */
+  const radarCanvas = document.getElementById('radar');
+  const rctx = radarCanvas.getContext('2d');
+  function resizeRadar() {
+    radarCanvas.width = window.innerWidth;
+    radarCanvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resizeRadar);
+  resizeRadar();
+
+  let pulseRadius = 0;
+  function animateRadar() {
+    rctx.clearRect(0, 0, radarCanvas.width, radarCanvas.height);
+    rctx.beginPath();
+    rctx.arc(radarCanvas.width/2, radarCanvas.height/2, pulseRadius, 0, 2*Math.PI);
+    rctx.strokeStyle = "rgba(0, 255, 0, " + (1 - pulseRadius/00) + ")";
+    rctx.lineWidth = 2;
+    rctx.stroke();
+
+    pulseRadius += 2;
+    if (pulseRadius > 300) pulseRadius = 0;
+
+    requestAnimationFrame(animateRadar);
+  }
+  animateRadar();
+
+  /* === Telemetry Counter Animation === */
+  function animateValue(id, start, end, duration) {
+    let obj = document.getElementById(id);
+    let range = end - start, startTime = null;
+    function step(timestamp) {
+      if (!startTime) startTime = timestamp;
+      let progress = Math.min((timestamp - startTime) / duration, 1);
+      obj.innerText = Math.floor(progress * range + start);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  animateValue("volunteers", 0, 1240, 1500);
+  animateValue("classifications", 0, 12845, 1500);
+  animateValue("candidates", 0, 327, 1500);
+  </script>
+</body>
+</html>

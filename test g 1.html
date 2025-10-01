@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Light Curve Classifier</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style>
+        :root {
+            --background-color: #0d1117;
+            --panel-color: rgba(22, 27, 34, 0.8);
+            --border-color: #30363d;
+            --font-color: #c9d1d9;
+            --font-color-secondary: #8b949e;
+            --accent-color: #2f81f7;
+            --accent-hover-color: #58a6ff;
+            --success-color: #3fb950;
+            --warning-color: #e5b53b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            background-image: url('https://w.wallhaven.cc/full/l8/wallhaven-l83o72.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--font-color);
+            padding: 2vw;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        /* --- Main Layout --- */
+        .app-container {
+            width: 100%;
+            max-width: 1400px;
+            backdrop-filter: blur(10px);
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        header h1 {
+            font-size: 1.8em;
+            font-weight: 600;
+        }
+
+        .progress-tracker {
+            text-align: right;
+            width: 250px;
+        }
+        
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
+            background-color: var(--accent-color);
+            border-radius: 4px;
+            transition: width 0.5s ease-out;
+        }
+        
+        .classifier-grid {
+            display: flex;
+            gap: 20px;
+        }
+
+        .display-panel {
+            flex: 3;
+            min-width: 0;
+        }
+
+        .task-panel {
+            flex: 1;
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            align-self: flex-start;
+            position: sticky;
+            top: 20px;
+        }
+
+        /* --- Image Display Panel --- */
+        .image-display-box {
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .image-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            margin-bottom: 10px;
+        }
+        
+        .image-title {
+            font-weight: 600;
+        }
+
+        .image-controls button {
+            background: none;
+            border: none;
+            color: var(--font-color-secondary);
+            cursor: pointer;
+            padding: 5px;
+        }
+        .image-controls button:hover {
+            color: var(--font-color);
+        }
+
+        .image-container {
+            overflow: hidden; /* For zoom */
+        }
+        
+        #light-curve-image {
+            width: 100%;
+            border-radius: 4px;
+            display: block;
+            transition: transform 0.3s ease;
+        }
+        
+        /* --- Task Panel --- */
+        .question-block { margin-bottom: 25px; }
+        .question-text { margin-bottom: 15px; font-weight: 600; line-height: 1.5; }
+
+        .answer-options button {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--font-color);
+            text-align: left;
+            font-size: 0.95em;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .answer-options button:hover {
+            border-color: var(--accent-hover-color);
+            background-color: rgba(88, 166, 255, 0.1);
+        }
+
+        .answer-options button.selected {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+
+        .key-hint {
+            font-size: 0.8em;
+            font-weight: 300;
+            padding: 2px 6px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+        #submit-button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--warning-color);
+            color: var(--background-color);
+            border: none;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 6px;
+            opacity: 0.5;
+            pointer-events: none;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #submit-button.enabled {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        /* --- Completion Screen --- */
+        .completion-screen {
+            text-align: center;
+            padding: 50px;
+            background-color: var(--panel-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .completion-screen h2 {
+            font-size: 2em;
+            color: var(--success-color);
+            margin-bottom: 20px;
+        }
+
+        #export-button {
+            padding: 12px 25px;
+            background-color: var(--success-color);
+            color: white;
+            border: none;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        #export-button:hover { background-color: #4cd163; }
+        
+        /* --- Help Modal --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: var(--background-color);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            transform: scale(0.95);
+            transition: transform 0.3s ease;
+        }
+        
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        
+        .modal-content h2 { margin-bottom: 20px; }
+        .modal-content p { margin-bottom: 15px; line-height: 1.6; color: var(--font-color-secondary); }
+        .modal-content ul { margin-left: 20px; margin-bottom: 20px; }
+        #close-modal { float: right; }
+
+        /* --- Utility Classes --- */
+        .hidden { display: none !important; }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 900px) {
+            .classifier-grid {
+                flex-direction: column;
+            }
+            .task-panel {
+                position: static;
+                width: 100%;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>Eclipsing Binary Patrol</h1>
+            <div class="progress-tracker">
+                <span id="progress-text">Curve 0 of 0</span>
+                <div class="progress-bar-container">
+                    <div id="progress-bar"></div>
+                </div>
+            </div>
+        </header>
+
+        <main id="classifier-main" class="classifier-grid">
+            <div class="display-panel">
+                <div class="image-display-box">
+                    <div class="image-header">
+                        <div id="image-metadata" class="image-title">Loading...</div>
+                        <div class="image-controls">
+                            <button id="help-button" title="Help"><i class="material-icons">help_outline</i></button>
+                            <button id="zoom-in-button" title="Zoom In"><i class="material-icons">zoom_in</i></button>
+                            <button id="zoom-out-button" title="Zoom Out"><i class="material-icons">zoom_out</i></button>
+                            <button id="reset-zoom-button" title="Reset Zoom"><i class="material-icons">restart_alt</i></button>
+                        </div>
+                    </div>
+                    <div class="image-container">
+                        <img id="light-curve-image" src="" alt="TESS Light Curve">
+                    </div>
+                </div>
+            </div>
+
+            <div class="task-panel">
+                <div id="task-questions">
+                    <div id="question1" class="question-block">
+                        <div class="question-text">1. Do you see clear, repeating dips in brightness?</div>
+                        <div class="answer-options">
+                            <button data-answer="Yes"><span class="key-hint">1</span> Yes</button>
+                            <button data-answer="No"><span class="key-hint">2</span> No</button>
+                        </div>
+                    </div>
+                    <div id="question2" class="question-block hidden">
+                        <div class="question-text">2. Are there two distinct dip depths (a deeper primary and a shallower secondary)?</div>
+                        <div class="answer-options">
+                            <button data-answer="Yes"><span class="key-hint">1</span> Yes, two depths are visible.</button>
+                            <button data-answer="No"><span class="key-hint">2</span> No, all dips seem to be the same depth.</button>
+                        </div>
+                    </div>
+                    <div id="question3" class="question-block hidden">
+                        <div class="question-text">3. Observe the phased curve (lower panel). Where does the shallower (secondary) dip occur?</div>
+                        <div class="answer-options">
+                            <button data-answer="Phase 0.5"><span class="key-hint">1</span> Near phase 0.5 (centered).</button>
+                            <button data-answer="Offset from 0.5"><span class="key-hint">2</span> Noticeably offset from phase 0.5.</button>
+                            <button data-answer="Not visible"><span class="key-hint">3</span> The secondary dip is not clearly visible.</button>
+                        </div>
+                    </div>
+                    <button id="submit-button">Submit <span class="key-hint">Enter</span></button>
+                </div>
+            </div>
+        </main>
+        
+        <div id="completion-container" class="hidden">
+            <div class="completion-screen">
+                <h2>All Curves Classified!</h2>
+                <p>Excellent work. You have completed the entire dataset.</p>
+                <button id="export-button">Download Results (CSV)</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="help-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button id="close-modal" class="image-controls"><i class="material-icons">close</i></button>
+            <h2>How to Classify</h2>
+            <p>Your goal is to identify patterns in the brightness of stars to find eclipsing binary systems.</p>
+            <ul>
+                <li><strong>Upper Panel:</strong> Shows the star's brightness over a long period. Look for consistent, periodic drops (dips).</li>
+                <li><strong>Lower Panel:</strong> Shows the same data "folded" or layered on top of itself based on its period. This makes the pattern of a single orbit clear.</li>
+                <li><strong>Primary Eclipse:</strong> The deepest dip, happening at phase 0.0.</li>
+                <li><strong>Secondary Eclipse:</strong> A shallower dip, often at phase 0.5, when the other star passes in front.</li>
+            </ul>
+            <p>Answer each question based on the plots to the best of your ability. Happy hunting!</p>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. CONFIGURE YOUR DATA HERE ---
+            // This is an array of objects. Each object needs a unique id and the URL to the image.
+            const lightCurveData = [
+                { id: 'TIC 42026200', url: 'pexels-krisof-1252890.jpg', sector: 38, period: 1.7253 },
+                { id: 'TIC 12345678', url: 'https://i.imgur.com/fL3n5sR.png', sector: 1, period: 3.1415 }, // Example placeholder
+                { id: 'TIC 87654321', url: 'https://i.imgur.com/vHqB3pG.png', sector: 2, period: 0.9876 }, // Example placeholder
+                // ... Add your 500 data objects here
+            ];
+
+            // --- 2. APPLICATION LOGIC (ADVANCED) ---
+
+            // State variables
+            let currentCurveIndex = 0;
+            let allClassifications = [];
+            let currentClassification = {};
+            let currentZoom = 1;
+
+            // DOM Elements
+            const mainClassifier = document.getElementById('classifier-main');
+            const completionContainer = document.getElementById('completion-container');
+            const imageElement = document.getElementById('light-curve-image');
+            const metadataElement = document.getElementById('image-metadata');
+            const progressText = document.getElementById('progress-text');
+            const progressBar = document.getElementById('progress-bar');
+            const submitButton = document.getElementById('submit-button');
+            const exportButton = document.getElementById('export-button');
+            const helpModal = document.getElementById('help-modal');
+
+            const questions = {
+                q1: document.getElementById('question1'),
+                q2: document.getElementById('question2'),
+                q3: document.getElementById('question3'),
+            };
+
+            // --- Core Functions ---
+
+            function loadProgress() {
+                const savedIndex = localStorage.getItem('ebp_currentCurveIndex');
+                const savedClassifications = localStorage.getItem('ebp_allClassifications');
+                if (savedIndex) {
+                    currentCurveIndex = parseInt(savedIndex, 10);
+                }
+                if (savedClassifications) {
+                    allClassifications = JSON.parse(savedClassifications);
+                }
+            }
+            
+            function saveProgress() {
+                localStorage.setItem('ebp_currentCurveIndex', currentCurveIndex);
+                localStorage.setItem('ebp_allClassifications', JSON.stringify(allClassifications));
+            }
+
+            function loadCurve(index) {
+                if (index >= lightCurveData.length) {
+                    showCompletionScreen();
+                    return;
+                }
+                const curve = lightCurveData[index];
+                imageElement.src = curve.url;
+                metadataElement.textContent = `${curve.id}; Sector: ${curve.sector}; Period = ${curve.period} days`;
+                updateProgress();
+                resetClassifierState();
+            }
+
+            function updateProgress() {
+                const total = lightCurveData.length;
+                progressText.textContent = `Curve ${currentCurveIndex + 1} of ${total}`;
+                const percent = ((currentCurveIndex + 1) / total) * 100;
+                progressBar.style.width = `${percent}%`;
+            }
+
+            function resetClassifierState() {
+                currentClassification = {};
+                Object.values(questions).forEach((q, i) => {
+                    q.classList.toggle('hidden', i !== 0); // Show only Q1
+                    q.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+                });
+                submitButton.classList.remove('enabled');
+                resetZoom();
+            }
+
+            function showCompletionScreen() {
+                mainClassifier.classList.add('hidden');
+                completionContainer.classList.remove('hidden');
+            }
+
+            function handleAnswer(questionId, button) {
+                const answer = button.dataset.answer;
+                currentClassification[questionId] = answer;
+
+                // Visual selection
+                button.parentElement.querySelectorAll('button').forEach(btn => btn.classList.remove('selected'));
+                button.classList.add('selected');
+
+                // Workflow Logic
+                const currentQuestionNum = parseInt(questionId.slice(1));
+                const nextQuestion = questions[`q${currentQuestionNum + 1}`];
+
+                if (nextQuestion) {
+                    nextQuestion.classList.remove('hidden');
+                    // Simple linear flow for this example. Can be customized.
+                    // e.g., if (answer === 'No') { ... logic to skip questions ... }
+                } else {
+                    submitButton.classList.add('enabled');
+                }
+            }
+
+            function submitClassification() {
+                if (!submitButton.classList.contains('enabled')) return;
+                
+                const finalData = {
+                    ...lightCurveData[currentCurveIndex], // Copy curve metadata
+                    classification: currentClassification // Add user answers
+                };
+                allClassifications.push(finalData);
+                console.log(`Submitted:`, finalData);
+
+                currentCurveIndex++;
+                saveProgress();
+                loadCurve(currentCurveIndex);
+            }
+            
+            function exportToCSV() {
+                if (allClassifications.length === 0) return;
+                
+                const headers = ['id', 'sector', 'period', 'q1', 'q2', 'q3'];
+                const rows = allClassifications.map(c => {
+                    const q_answers = c.classification || {};
+                    return [c.id, c.sector, c.period, q_answers.q1 || 'N/A', q_answers.q2 || 'N/A', q_answers.q3 || 'N/A'].join(',');
+                });
+
+                const csvContent = "data:text/csv;charset=utf-8," + headers.join(',') + '\n' + rows.join('\n');
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                link.setAttribute("download", "classifications.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
+            // --- Zoom Controls ---
+            function applyZoom() {
+                imageElement.style.transform = `scale(${currentZoom})`;
+            }
+            function zoomIn() { currentZoom = Math.min(3, currentZoom + 0.2); applyZoom(); }
+            function zoomOut() { currentZoom = Math.max(1, currentZoom - 0.2); applyZoom(); }
+            function resetZoom() { currentZoom = 1; applyZoom(); }
+
+            // --- Keyboard Shortcuts ---
+            function handleKeyPress(e) {
+                const activeQuestion = Object.values(questions).find(q => !q.classList.contains('hidden'));
+                if (!activeQuestion) return;
+
+                const key = e.key;
+                if (['1', '2', '3', '4'].includes(key)) {
+                    const index = parseInt(key) - 1;
+                    const buttons = activeQuestion.querySelectorAll('.answer-options button');
+                    if (buttons[index]) {
+                        buttons[index].click();
+                    }
+                } else if (key === 'Enter') {
+                    submitClassification();
+                }
+            }
+
+            // --- Event Listeners ---
+            Object.entries(questions).forEach(([id, element]) => {
+                element.querySelectorAll('button').forEach(btn => {
+                    btn.addEventListener('click', () => handleAnswer(id, btn));
+                });
+            });
+
+            submitButton.addEventListener('click', submitClassification);
+            exportButton.addEventListener('click', exportToCSV);
+            
+            // Zoom Listeners
+            document.getElementById('zoom-in-button').addEventListener('click', zoomIn);
+            document.getElementById('zoom-out-button').addEventListener('click', zoomOut);
+            document.getElementById('reset-zoom-button').addEventListener('click', resetZoom);
+
+            // Modal Listeners
+            document.getElementById('help-button').addEventListener('click', () => helpModal.classList.add('visible'));
+            document.getElementById('close-modal').addEventListener('click', () => helpModal.classList.remove('visible'));
+            helpModal.addEventListener('click', (e) => { // Close on overlay click
+                if (e.target === helpModal) helpModal.classList.remove('visible');
+            });
+            
+            // Keyboard Listener
+            document.addEventListener('keydown', handleKeyPress);
+
+            // --- Initial Load ---
+            loadProgress();
+            loadCurve(currentCurveIndex);
+        });
+    </script>
+</body>
+</html>
