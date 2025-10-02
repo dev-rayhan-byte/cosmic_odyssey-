@@ -8,7 +8,44 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="templatemo-neural-style.css" rel="stylesheet">
-</head>
+
+  <style>
+  /* Prevent horizontal overflow on small screens */
+/* 📱 Fix header overflow only on small screens */
+@media (max-width: 768px) {
+  html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+
+
+  /* Prevent long logo text from pushing layout */
+  .logo {
+    white-space: nowrap;
+    font-size: clamp(1rem, 6vw, 1.3rem);
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Wrap nav links instead of pushing screen */
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+
+  /* Keep decorative elements from overflowing */
+  .geometric-shapes,
+  .neural-lines {
+    overflow: hidden;
+    max-width: 100%;
+  }
+}
+
+  </style>
+  
+  </head>
 <body>
   <!-- Background -->
   <div class="neural-background"></div>
@@ -152,7 +189,7 @@
         <a href="classifier.html">Classifier</a>
       </div>
       <div class="footer-copyright">
-        <p>&copy; 2025 Cosmic Gleams. Built with NASA Open Data.</p>
+        <p>&copy; 2025 Cosmic Gleams. Built with NASA Open Data. Developed by Rayhan Miah [Team Planet Hunter] </p>
       </div>
     </div>
   </footer>
