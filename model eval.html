@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Exoplanet Candidate Classification: A Machine Learning Case Study</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Open+Sans&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Open Sans', sans-serif;
+      background-color: #050710;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      font-family: 'Orbitron', sans-serif;
+      color: #00f5ff;
+      text-shadow: 0 0 10px #00f5ff;
+    }
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(5, 7, 16, 0.95);
+      border-bottom: 2px solid #00f5ff;
+      z-index: 1000;
+    }
+    nav ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: flex;
+      justify-content: center;
+    }
+    nav ul li {
+      margin: 0 20px;
+    }
+    nav ul li a {
+      color: #e0e0e0;
+      text-decoration: none;
+      font-weight: bold;
+      transition: color 0.3s ease;
+    }
+    nav ul li a:hover {
+      color: #00f5ff;
+    }
+    section {
+      padding: 100px 60px;
+      max-width: 1200px;
+      margin: auto;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s ease-out;
+    }
+    section.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .content-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 60px;
+      align-items: center;
+    }
+    .content-block img {
+      width: 100%;
+      border-radius: 12px;
+      border: 2px solid #00f5ff;
+      box-shadow: 0 0 15px #00f5ff88;
+    }
+    .caption {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-top: 5px;
+    }
+    strong {
+      color: #ff80ff;
+    }
+    footer {
+      text-align: center;
+      padding: 30px;
+      font-size: 0.8rem;
+      border-top: 1px solid #222;
+      color: #888;
+    }
+
+    /* === Dashboard Panels === */
+    .dashboard {
+      display: flex;
+      justify-content: space-evenly;
+      margin: 50px 0;
+      flex-wrap: wrap;
+      gap: 30px;
+    }
+    .panel {
+      background: #0b1124;
+      padding: 20px;
+      border: 2px solid #00f5ff;
+      border-radius: 10px;
+      width: 220px;
+      text-align: center;
+      box-shadow: 0 0 20px #00f5ff55;
+    }
+    .panel h3 {
+      margin-bottom: 10px;
+      color: #ff80ff;
+      font-size: 1rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 20px;
+      background: #111;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px 0;
+      box-shadow: 0 0 10px #00f5ff44 inset;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #00f5ff, #ff00ff);
+      transition: width 2s ease;
+    }
+    .counter {
+      font-size: 1.4rem;
+      font-weight: bold;
+      text-shadow: 0 0 6px #00f5ff;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav>
+    <ul>
+      <li><a href="#intro">Cosmic Gleam</a></li>
+      <li><a href="#intro">Dash Board</a></li>
+      <li><a href="#tabular">Tabular Classifier</a></li>
+      <li><a href="#image">Image Classifier</a></li>
+    </ul>
+  </nav>
+
+  <!-- Intro -->
+  <section id="intro">
+    <h1>Exoplanet Candidate Classification</h1>
+    <h2>A Machine Learning Case Study</h2>
+    <p>This study presents two ML approaches: a <strong>tabular classifier</strong> using astrophysical parameters, and an <strong>image classifier</strong> analyzing light curve images.</p>
+
+    <!-- Dashboard Panels -->
+    <div class="dashboard">
+      <div class="panel">
+        <h3>Accuracy</h3>
+        <div class="progress-bar"><div class="progress-fill" data-fill="98%"></div></div>
+        <p class="counter" data-target="81">0</p>%
+      </div>
+      <div class="panel">
+        <h3>Precision</h3>
+        <div class="progress-bar"><div class="progress-fill" data-fill="98.2%"></div></div>
+        <p class="counter" data-target="84.3">0</p>%
+      </div>
+      <div class="panel">
+        <h3>Recall</h3>
+        <div class="progress-bar"><div class="progress-fill" data-fill="98%"></div></div>
+        <p class="counter" data-target="79">0</p>%
+      </div>
+      <div class="panel">
+        <h3>F1 Score</h3>
+        <div class="progress-bar"><div class="progress-fill" data-fill="89%"></div></div>
+        <p class="counter" data-target="77">0</p>%
+      </div>
+    </div>
+  </section>
+
+  <!-- Tabular Data Classifier -->
+  <section id="tabular">
+    <h2>Case Study 1: Tabular Classifier</h2>
+    <div class="content-block">
+      <div><img src="rf_feature_importance%20-%20Copy%20(2).png" alt="Feature Distributions"><p class="caption">Feature Distributions</p></div>
+      <div><p><strong>Analysis:</strong> Strong right-skewness in 'Orbital period', 'Transit duration', and 'Planet radius'.<br>
+      <strong>Conclusion:</strong> Logarithmic transformation required to stabilize variance.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="eda_pca2.png" alt="PCA Visualization"><p class="caption">PCA Projection</p></div>
+      <div><p><strong>Analysis:</strong> Classes overlap heavily in PCA space.<br>
+      <strong>Conclusion:</strong> Non-linear classifiers necessary for separation.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="tsne_2d.png" alt="t-SNE Visualization"><p class="caption">t-SNE Projection</p></div>
+      <div><p><strong>Analysis:</strong> Class 1 is scattered and ambiguous.<br>
+      <strong>Conclusion:</strong> Predictive difficulty expected for Class 1.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="model_comparison.png" alt="Model Comparison"><p class="caption">Model Comparison</p></div>
+      <div><p><strong>Analysis:</strong> All models within 0.72–0.74 accuracy.<br>
+      <strong>Conclusion:</strong> RandomForest/XGBoost chosen for efficiency.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="XGBoost_learning_curve.png" alt="Learning Curve"><p class="caption">Learning Curve</p></div>
+      <div><p><strong>Analysis:</strong> Large gap between training and validation.<br>
+      <strong>Conclusion:</strong> High variance — strong overfitting detected.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="RandomForest_confusion.png" alt="Confusion Matrix"><p class="caption">Confusion Matrix</p></div>
+      <div><p><strong>Analysis:</strong> Class 1 has high misclassification.<br>
+      <strong>Conclusion:</strong> Major improvement required for Class 1 accuracy.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="RandomForest_roc.png" alt="ROC Curves"><p class="caption">ROC Curves</p></div>
+      <div><p><strong>Analysis:</strong> Class 1 curve is close to random.<br>
+      <strong>Conclusion:</strong> Model fails to separate Class 1 well.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="rf_permutation_importance.png" alt="Feature Importance"><p class="caption">Feature Importance</p></div>
+      <div><p><strong>Analysis:</strong> signal_to_noise dominates feature set.<br>
+      <strong>Conclusion:</strong> Detection quality drives predictions.</p></div>
+    </div>
+    <div class="content-block">
+      <div><img src="shap_beeswarm.png" alt="SHAP Plot"><p class="caption">SHAP Explainability</p></div>
+      <div><p><strong>Analysis:</strong> SHAP confirms importance of signal_to_noise and transit_duration.<br>
+      <strong>Conclusion:</strong> Local + global interpretability aligned.</p></div>
+    </div>
+  </section>
+
+  <!-- Image Classifier -->
+  <section id="image">
+    <h2>Case Study 2: Image Classifier</h2>
+    <div class="content-block">
+      <div><img src="icg.png" alt="Image Classifier Dashboard"><p class="caption">Image Classifier Results</p></div>
+      <div>
+        <p><strong>Analysis:</strong> ROC/PR curves close to random. Confusion matrix shows weak separability.<br>
+        <strong>Conclusion:</strong> Transit image classification feasible but limited by low SNR.</p>
+        <div class="progress-bar"><div class="progress-fill" data-fill="65%"></div></div>
+        <p style="text-align:center">Validation Accuracy Progression</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2025 Exoplanet ML Case Study | Sci-Fi Themed Dashboard
+  </footer>
+
+  <!-- JS Animations -->
+  <script>
+    // Counter animation
+    document.querySelectorAll('.counter').forEach(counter => {
+      let target = +counter.getAttribute('data-target');
+      let update = () => {
+        let current = +counter.innerText;
+        let inc = Math.ceil(target / 50);
+        if (current < target) {
+          counter.innerText = current + inc;
+          setTimeout(update, 40);
+        } else {
+          counter.innerText = target;
+        }
+      };
+      update();
+    });
+    // Progress fill animation
+    document.querySelectorAll('.progress-fill').forEach(fill => {
+      let width = fill.getAttribute('data-fill');
+      setTimeout(() => { fill.style.width = width; }, 800);
+    });
+    // Fade-in sections
+    const sections = document.querySelectorAll("section");
+    window.addEventListener("scroll", () => {
+      const trigger = window.innerHeight * 0.85;
+      sections.forEach(sec => {
+        if (sec.getBoundingClientRect().top < trigger) {
+          sec.classList.add("visible");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
